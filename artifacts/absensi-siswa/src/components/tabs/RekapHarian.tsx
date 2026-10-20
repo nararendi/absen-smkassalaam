@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Download, Printer, CheckCircle, FileText } from 'lucide-react';
-import { useClasses, useStudents, useAttendance, useSchoolInfo } from '@/lib/queries';
+import { useClasses, useStudents, useAttendance, useSchoolInfo, useWaliKelas } from '@/lib/queries';
 import { cn, formatShortDate, formatDate } from '@/lib/utils';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -18,6 +18,17 @@ export default function RekapHarian() {
   const { data: students = [] } = useStudents();
   const { data: attendance = [], isLoading } = useAttendance(selectedDate);
   const { data: schoolInfo } = useSchoolInfo();
+  const { data: waliKelasList = [] } = useWaliKelas();
+
+  const waliMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    waliKelasList.forEach(w => {
+      if (w.kelas && w.nama) {
+        map[w.kelas.trim()] = w.nama.trim();
+      }
+    });
+    return map;
+  }, [waliKelasList]);
 
   const filteredData = useMemo(() => {
     let result = students;
@@ -76,9 +87,9 @@ export default function RekapHarian() {
     worksheet.addRow([]); // empty row
 
     // Merge cells for title
-    worksheet.mergeCells('A1:G1');
-    worksheet.mergeCells('A2:G2');
-    worksheet.mergeCells('A3:G3');
+    worksheet.mergeCells('A1:H1');
+    worksheet.mergeCells('A2:H2');
+    worksheet.mergeCells('A3:H3');
 
     // Style titles
     worksheet.getCell('A1').font = { bold: true, size: 14 };
@@ -87,7 +98,7 @@ export default function RekapHarian() {
     worksheet.getCell('A2').alignment = { horizontal: 'center' };
     worksheet.getCell('A3').alignment = { horizontal: 'center' };
 
-    const headers = ['No', 'NIS', 'Nama Siswa', 'Kelas', 'L/P', 'Status', 'Keterangan'];
+    const headers = ['No', 'NIS', 'Nama Siswa', 'Kelas', 'L/P', 'Status', 'Wali Kelas', 'Keterangan'];
     const headerRow = worksheet.addRow(headers);
     
     headerRow.eachCell((cell) => {
@@ -106,11 +117,12 @@ export default function RekapHarian() {
         item.kelas,
         item.gender,
         status,
+        waliMap[item.kelas?.trim()] || '-',
         item.record?.note || '-'
       ]);
       row.eachCell((cell, colNumber) => {
         cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-        if (colNumber === 3) {
+        if (colNumber === 3 || colNumber === 7 || colNumber === 8) {
           cell.alignment = { horizontal: 'left', vertical: 'middle' };
         } else {
           cell.alignment = { horizontal: 'center', vertical: 'middle' };
@@ -133,7 +145,8 @@ export default function RekapHarian() {
     worksheet.getColumn(4).width = 15;
     worksheet.getColumn(5).width = 10;
     worksheet.getColumn(6).width = 15;
-    worksheet.getColumn(7).width = 25;
+    worksheet.getColumn(7).width = 28;
+    worksheet.getColumn(8).width = 30;
 
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -158,7 +171,7 @@ export default function RekapHarian() {
     doc.setFont('helvetica', 'normal');
     doc.text(`Kelas: ${selectedClass === 'ALL' ? 'Semua Kelas' : selectedClass}   |   Tanggal: ${formatDate(selectedDate)}`, doc.internal.pageSize.getWidth() / 2, 29, { align: 'center' });
 
-    const headers = ['No', 'NIS', 'Nama Siswa', 'Kelas', 'L/P', 'Status', 'Keterangan'];
+    const headers = ['No', 'NIS', 'Nama Siswa', 'Kelas', 'L/P', 'Status', 'Wali Kelas', 'Keterangan'];
     const rows = filteredData.map((item, i) => [
       i + 1,
       item.nis,
@@ -166,6 +179,7 @@ export default function RekapHarian() {
       item.kelas,
       item.gender,
       item.record?.status || 'Hadir',
+      waliMap[item.kelas?.trim()] || '-',
       item.record?.note || '-'
     ]);
 
@@ -177,6 +191,8 @@ export default function RekapHarian() {
       styles: { fontSize: 8, cellPadding: 2, halign: 'center' },
       columnStyles: {
         2: { halign: 'left' },
+        6: { halign: 'left' },
+        7: { halign: 'left' },
       },
       headStyles: { fillColor: [241, 245, 249], textColor: [71, 85, 105] },
       didParseCell: function(data) {
@@ -304,7 +320,8 @@ export default function RekapHarian() {
                   <th className="px-4 py-3 font-medium">Nama Siswa</th>
                   <th className="px-4 py-3 font-medium w-24">Kelas</th>
                   <th className="px-4 py-3 font-medium w-16 text-center">L/P</th>
-                  <th className="px-4 py-3 font-medium w-32">Status</th>
+                  <th className="px-4 py-3 font-medium w-28">Status</th>
+                  <th className="px-4 py-3 font-medium w-48">Wali Kelas</th>
                   <th className="px-4 py-3 font-medium">Keterangan</th>
                 </tr>
               </thead>
@@ -329,6 +346,7 @@ export default function RekapHarian() {
                           {status}
                         </span>
                       </td>
+                      <td className="px-4 py-3 text-slate-700 font-medium">{waliMap[s.kelas?.trim()] || '-'}</td>
                       <td className="px-4 py-3">{s.record?.note || '-'}</td>
                     </tr>
                   );
