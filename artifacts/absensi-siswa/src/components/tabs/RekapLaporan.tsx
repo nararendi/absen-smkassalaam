@@ -114,7 +114,7 @@ export default function RekapLaporan() {
   const reportDataRentang = useMemo(() => {
     if (reportMode !== 'rentang' || !activeClass) return [];
 
-    const attMap = new Map<string, Map<string, AttendanceStatus>>();
+    const attMap = new Map<string, Map<string, { status: AttendanceStatus; note: string }>>();
     const activeDates = new Set<string>();
 
     attendance.forEach(r => {
@@ -122,7 +122,7 @@ export default function RekapLaporan() {
         if (!attMap.has(r.student_id)) {
           attMap.set(r.student_id, new Map());
         }
-        attMap.get(r.student_id)!.set(r.date, r.status);
+        attMap.get(r.student_id)!.set(r.date, { status: r.status, note: r.note || '' });
         activeDates.add(r.date);
       }
     });
@@ -142,7 +142,7 @@ export default function RekapLaporan() {
           const record = studentRecords.get(date);
           let finalStatus = '-';
           if (record) {
-            finalStatus = record.charAt(0);
+            finalStatus = record.status.charAt(0);
           } else if (!isWeekend) {
             finalStatus = 'H';
           }
@@ -153,6 +153,32 @@ export default function RekapLaporan() {
           else if (finalStatus === 'A') a++;
         });
 
+        // Collect absent notes (Sakit, Izin, Alpa) for this student in this month
+        const absentDates = Array.from(studentRecords.keys())
+          .filter(date => date.startsWith(prefix))
+          .sort();
+
+        const notes: { date: string; dateFormatted: string; status: AttendanceStatus; note: string; displayText: string }[] = [];
+        absentDates.forEach(date => {
+          const rec = studentRecords.get(date);
+          if (rec && rec.status !== 'Hadir') {
+            const [y, m, d] = date.split('-');
+            const dateFormatted = `${parseInt(d)} ${MONTHS[parseInt(m) - 1]} ${y}`;
+            const noteText = rec.note ? rec.note.trim() : '';
+            const idxNum = notes.length + 1;
+            const displayText = `${idxNum}. Tanggal ${dateFormatted} (${rec.status})${noteText ? `: ${noteText}` : ''}`;
+            notes.push({
+              date,
+              dateFormatted,
+              status: rec.status,
+              note: noteText,
+              displayText
+            });
+          }
+        });
+
+        const notesText = notes.map(n => n.displayText).join('\n');
+
         totalH += h;
         totalS += sakit;
         totalI += i;
@@ -160,7 +186,7 @@ export default function RekapLaporan() {
 
         const totalActive = activeDatesInMonth.length;
         const percent = totalActive > 0 ? Math.round((h / totalActive) * 100) : 0;
-        return { label: mInfo.label, h, s: sakit, i, a, percent };
+        return { label: mInfo.label, h, s: sakit, i, a, percent, notes, notesText };
       });
 
       const grandTotalActive = totalH + totalS + totalI + totalA;
@@ -425,16 +451,16 @@ export default function RekapLaporan() {
     worksheet.addRow([`Kelas: ${activeClass}   |   Periode: ${formatShortDate(startDate)} s/d ${formatShortDate(endDate)}   |   Wali Kelas: ${activeWali?.nama || 'Ute Juli Kurnia, S.T.,Gr.'}`]);
     worksheet.addRow([]);
 
-    worksheet.mergeCells('A1:I1');
-    worksheet.mergeCells('A2:I2');
-    worksheet.mergeCells('A3:I3');
+    worksheet.mergeCells('A1:J1');
+    worksheet.mergeCells('A2:J2');
+    worksheet.mergeCells('A3:J3');
     worksheet.getCell('A1').font = { bold: true, size: 14 };
     worksheet.getCell('A1').alignment = { horizontal: 'center' };
     worksheet.getCell('A2').font = { bold: true, size: 12 };
     worksheet.getCell('A2').alignment = { horizontal: 'center' };
     worksheet.getCell('A3').alignment = { horizontal: 'center' };
 
-    const headers = ['NO', 'NIS', 'NAMA SISWA', 'BULAN', 'H', 'S', 'I', 'A', '%'];
+    const headers = ['NO', 'NIS', 'NAMA SISWA', 'BULAN', 'H', 'S', 'I', 'A', '%', 'KETERANGAN'];
     const headerRow = worksheet.addRow(headers);
     headerRow.eachCell(cell => {
       cell.font = { bold: true };
@@ -450,19 +476,24 @@ export default function RekapLaporan() {
       item.monthlySummary.forEach(m => {
         const row = worksheet.addRow([
           idx + 1, item.nis, item.nama, m.label,
-          m.h > 0 ? m.h : '-', m.s > 0 ? m.s : '-', m.i > 0 ? m.i : '-', m.a > 0 ? m.a : '-', `${m.percent}%`
+          m.h > 0 ? m.h : '-', m.s > 0 ? m.s : '-', m.i > 0 ? m.i : '-', m.a > 0 ? m.a : '-', `${m.percent}%`,
+          m.notesText || '-'
         ]);
         row.eachCell((cell, colNumber) => {
           cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-          if (colNumber === 2 || colNumber === 3 || colNumber === 4) cell.alignment = { horizontal: 'left', vertical: 'middle' };
-          else cell.alignment = { horizontal: 'center', vertical: 'middle' };
+          if (colNumber === 2 || colNumber === 3 || colNumber === 4 || colNumber === 10) {
+            cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: colNumber === 10 };
+          } else {
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+          }
         });
         currentRow++;
       });
 
       const totalRow = worksheet.addRow([
         '', '', 'TOTAL', '',
-        item.summary.h > 0 ? item.summary.h : '-', item.summary.s > 0 ? item.summary.s : '-', item.summary.i > 0 ? item.summary.i : '-', item.summary.a > 0 ? item.summary.a : '-', `${item.summary.percentHadir}%`
+        item.summary.h > 0 ? item.summary.h : '-', item.summary.s > 0 ? item.summary.s : '-', item.summary.i > 0 ? item.summary.i : '-', item.summary.a > 0 ? item.summary.a : '-', `${item.summary.percentHadir}%`,
+        '-'
       ]);
       totalRow.eachCell((cell, colNumber) => {
         cell.font = { bold: true };
@@ -487,21 +518,22 @@ export default function RekapLaporan() {
     worksheet.getColumn(3).width = 30;
     worksheet.getColumn(4).width = 20;
     for (let i = 5; i <= 9; i++) worksheet.getColumn(i).width = 8;
+    worksheet.getColumn(10).width = 45;
 
     worksheet.addRow([]);
     worksheet.addRow([]);
     
     const dateRowIndex = worksheet.rowCount + 1;
-    worksheet.getCell(dateRowIndex, 9).value = `${schoolInfo?.kota || 'Kab. Bandung'}, ${printDateStr}`;
-    worksheet.getCell(dateRowIndex, 9).alignment = { horizontal: 'center' };
+    worksheet.getCell(dateRowIndex, 10).value = `${schoolInfo?.kota || 'Kab. Bandung'}, ${printDateStr}`;
+    worksheet.getCell(dateRowIndex, 10).alignment = { horizontal: 'center' };
     
     const titleRowIndex = worksheet.rowCount + 2;
     worksheet.getCell(titleRowIndex, 3).value = 'Kepala Sekolah';
     worksheet.getCell(titleRowIndex, 3).alignment = { horizontal: 'center' };
     worksheet.getCell(titleRowIndex, 6).value = 'Wakasek Kesiswaan';
     worksheet.getCell(titleRowIndex, 6).alignment = { horizontal: 'center' };
-    worksheet.getCell(titleRowIndex, 9).value = `Wali Kelas ${activeClass}`;
-    worksheet.getCell(titleRowIndex, 9).alignment = { horizontal: 'center' };
+    worksheet.getCell(titleRowIndex, 10).value = `Wali Kelas ${activeClass}`;
+    worksheet.getCell(titleRowIndex, 10).alignment = { horizontal: 'center' };
 
     const nameRowIndex = titleRowIndex + 4;
     worksheet.getCell(nameRowIndex, 3).value = schoolInfo?.kepala_sekolah || 'H.M. Luthfi Almanfaluthi, S.T.,M.Pd.';
@@ -512,9 +544,17 @@ export default function RekapLaporan() {
     worksheet.getCell(nameRowIndex, 6).font = { bold: true };
     worksheet.getCell(nameRowIndex, 6).alignment = { horizontal: 'center' };
 
-    worksheet.getCell(nameRowIndex, 9).value = activeWali?.nama || 'Ute Juli Kurnia, S.T.,Gr.';
-    worksheet.getCell(nameRowIndex, 9).font = { bold: true };
-    worksheet.getCell(nameRowIndex, 9).alignment = { horizontal: 'center' };
+    worksheet.getCell(nameRowIndex, 10).value = activeWali?.nama || 'Ute Juli Kurnia, S.T.,Gr.';
+    worksheet.getCell(nameRowIndex, 10).font = { bold: true };
+    worksheet.getCell(nameRowIndex, 10).alignment = { horizontal: 'center' };
+
+    const nipRowIndex = nameRowIndex + 1;
+    worksheet.getCell(nipRowIndex, 3).value = `NIP. ${schoolInfo?.nip_kepala || '..........................'}`;
+    worksheet.getCell(nipRowIndex, 3).alignment = { horizontal: 'center' };
+    worksheet.getCell(nipRowIndex, 6).value = `NIP. ${schoolInfo?.nip_wakil || '..........................'}`;
+    worksheet.getCell(nipRowIndex, 6).alignment = { horizontal: 'center' };
+    worksheet.getCell(nipRowIndex, 10).value = `NIP. ${activeWali?.nip || '..........................'}`;
+    worksheet.getCell(nipRowIndex, 10).alignment = { horizontal: 'center' };
 
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -534,7 +574,7 @@ export default function RekapLaporan() {
     const infoText = `Kelas: ${activeClass}   |   Periode: ${formatShortDate(startDate)} s/d ${formatShortDate(endDate)}   |   Wali Kelas: ${activeWali?.nama || 'Ute Juli Kurnia, S.T.,Gr.'}`;
     doc.text(infoText, doc.internal.pageSize.getWidth() / 2, 29, { align: 'center' });
 
-    const headers = ['NO', 'NIS', 'NAMA SISWA', 'BULAN', 'H', 'S', 'I', 'A', '%'];
+    const headers = ['NO', 'NIS', 'NAMA SISWA', 'BULAN', 'H', 'S', 'I', 'A', '%', 'KETERANGAN'];
     const rows: any[] = [];
 
     reportDataRentang.forEach((item, idx) => {
@@ -544,7 +584,8 @@ export default function RekapLaporan() {
           mIdx === 0 ? item.nis : '',
           mIdx === 0 ? item.nama : '',
           m.label,
-          m.h > 0 ? m.h : '-', m.s > 0 ? m.s : '-', m.i > 0 ? m.i : '-', m.a > 0 ? m.a : '-', `${m.percent}%`
+          m.h > 0 ? m.h : '-', m.s > 0 ? m.s : '-', m.i > 0 ? m.i : '-', m.a > 0 ? m.a : '-', `${m.percent}%`,
+          m.notesText || '-'
         ]);
       });
       rows.push([
@@ -555,7 +596,8 @@ export default function RekapLaporan() {
         { content: item.summary.s > 0 ? item.summary.s : '-', styles: { fontStyle: 'bold' } },
         { content: item.summary.i > 0 ? item.summary.i : '-', styles: { fontStyle: 'bold' } },
         { content: item.summary.a > 0 ? item.summary.a : '-', styles: { fontStyle: 'bold' } },
-        { content: `${item.summary.percentHadir}%`, styles: { fontStyle: 'bold' } }
+        { content: `${item.summary.percentHadir}%`, styles: { fontStyle: 'bold' } },
+        { content: '-', styles: { fontStyle: 'normal' } }
       ]);
     });
 
@@ -565,7 +607,18 @@ export default function RekapLaporan() {
       body: rows,
       theme: 'grid',
       styles: { fontSize: 8, cellPadding: 2, halign: 'center' },
-      columnStyles: { 2: { halign: 'left', cellWidth: 40 }, 3: { halign: 'left', cellWidth: 30 } },
+      columnStyles: { 
+        0: { cellWidth: 8, halign: 'center' },
+        1: { cellWidth: 18, halign: 'center' },
+        2: { cellWidth: 32, halign: 'left' }, 
+        3: { cellWidth: 22, halign: 'left' },
+        4: { cellWidth: 7, halign: 'center' },
+        5: { cellWidth: 7, halign: 'center' },
+        6: { cellWidth: 7, halign: 'center' },
+        7: { cellWidth: 7, halign: 'center' },
+        8: { cellWidth: 11, halign: 'center' },
+        9: { halign: 'left' }
+      },
       headStyles: { fillColor: [241, 245, 249], textColor: [71, 85, 105], lineColor: [203, 213, 225], lineWidth: 0.1 },
       margin: { bottom: 20 },
       didParseCell: function(data) {
@@ -791,6 +844,7 @@ export default function RekapLaporan() {
                     <th className="px-3 py-2 border border-slate-200 w-12 text-sky-600 print:text-black">I</th>
                     <th className="px-3 py-2 border border-slate-200 w-12 text-rose-600 print:text-black">A</th>
                     <th className="px-3 py-2 border border-slate-200 w-16">%</th>
+                    <th className="px-4 py-2 border border-slate-200 text-left min-w-[260px]">Keterangan</th>
                   </tr>
                 </thead>
                 <tbody className="text-slate-700 print:text-black">
@@ -811,6 +865,28 @@ export default function RekapLaporan() {
                           <td className="px-3 py-2 border border-slate-200 text-center font-medium">{m.i > 0 ? m.i : '-'}</td>
                           <td className="px-3 py-2 border border-slate-200 text-center font-medium">{m.a > 0 ? m.a : '-'}</td>
                           <td className="px-3 py-2 border border-slate-200 text-center font-medium">{m.percent}%</td>
+                          <td className="px-4 py-2 border border-slate-200 text-xs text-left">
+                            {m.notes.length > 0 ? (
+                              <div className="space-y-1">
+                                {m.notes.map((n, nIdx) => (
+                                  <div key={nIdx} className="leading-snug">
+                                    <span className="font-semibold text-slate-800">{nIdx + 1}. Tanggal {n.dateFormatted}</span>{' '}
+                                    <span className={cn(
+                                      "text-[10px] font-bold px-1.5 py-0.5 rounded",
+                                      n.status === 'Sakit' ? "bg-amber-100 text-amber-800 print:text-black" :
+                                      n.status === 'Izin' ? "bg-sky-100 text-sky-800 print:text-black" :
+                                      "bg-rose-100 text-rose-800 print:text-black"
+                                    )}>
+                                      {n.status}
+                                    </span>
+                                    {n.note ? <span className="text-slate-600">: {n.note}</span> : ''}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-slate-400">-</span>
+                            )}
+                          </td>
                         </tr>
                       ))}
                       <tr className="bg-slate-50/80 font-bold print:bg-transparent">
@@ -820,6 +896,7 @@ export default function RekapLaporan() {
                         <td className="px-3 py-2 border border-slate-200 text-center text-sky-700 print:text-black">{item.summary.i > 0 ? item.summary.i : '-'}</td>
                         <td className="px-3 py-2 border border-slate-200 text-center text-rose-700 print:text-black">{item.summary.a > 0 ? item.summary.a : '-'}</td>
                         <td className="px-3 py-2 border border-slate-200 text-center">{item.summary.percentHadir}%</td>
+                        <td className="px-4 py-2 border border-slate-200 text-center text-slate-400 font-normal">-</td>
                       </tr>
                     </React.Fragment>
                   ))}
