@@ -569,7 +569,8 @@ export default function RekapLaporan() {
       headStyles: { fillColor: [241, 245, 249], textColor: [71, 85, 105], lineColor: [203, 213, 225], lineWidth: 0.1 },
       margin: { bottom: 20 },
       didParseCell: function(data) {
-        if (data.row.raw[1]?.content === 'TOTAL' || (data.row.raw as any)[1] === 'TOTAL') {
+        const rawRow = data.row.raw as any;
+        if (rawRow?.[1]?.content === 'TOTAL' || rawRow?.[1] === 'TOTAL') {
           data.cell.styles.fillColor = [248, 250, 252];
         }
       }

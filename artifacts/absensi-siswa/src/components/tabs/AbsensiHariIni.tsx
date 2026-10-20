@@ -57,7 +57,7 @@ export default function AbsensiHariIni() {
     const current = attendanceMap[studentId];
     if (current?.status === status) {
       // Toggle off -> Delete record
-      deleteAttendance.mutate(current.id);
+      deleteAttendance.mutate({ id: current.id, date: selectedDate });
     } else {
       // Create or update
       upsertAttendance.mutate({
@@ -101,7 +101,7 @@ export default function AbsensiHariIni() {
       filteredStudents.forEach(s => {
         const current = attendanceMap[s.id];
         if (current) {
-          deleteAttendance.mutate(current.id);
+          deleteAttendance.mutate({ id: current.id, date: selectedDate });
         }
       });
     }
