@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Download, Printer, CheckCircle, FileText } from 'lucide-react';
+import { Download, Printer, CheckCircle, FileText, UserX, HeartPulse, Clock, AlertTriangle } from 'lucide-react';
 import { useClasses, useStudents, useAttendance, useSchoolInfo, useWaliKelas } from '@/lib/queries';
 import { cn, formatShortDate, formatDate } from '@/lib/utils';
 import ExcelJS from 'exceljs';
@@ -283,15 +283,47 @@ export default function RekapHarian() {
       </div>
 
       {/* SUMMARY CARDS */}
-      <div className="p-4 sm:p-6 bg-slate-50/50 border-b border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-4 no-print">
-        <StatCard label="Total Tidak Hadir" value={stats.total} color="text-slate-900" />
-        <StatCard label="Sakit" value={stats.sakit} color="text-amber-600" />
-        <StatCard label="Izin" value={stats.izin} color="text-sky-600" />
-        <StatCard label="Alpa" value={stats.alpa} color="text-rose-600" />
+      <div className="px-4 sm:px-6 py-2.5 sm:py-3 bg-slate-50/50 border-b border-slate-200 grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 no-print">
+        <StatCard 
+          label="Total Tidak Hadir" 
+          value={stats.total} 
+          icon={<UserX className="w-4 h-4 text-indigo-600" />}
+          bg="bg-gradient-to-br from-indigo-50/90 via-slate-50 to-indigo-100/40 border-indigo-200/70"
+          valueColor="text-indigo-950"
+          labelColor="text-indigo-800/80"
+          iconBg="bg-indigo-100/80"
+        />
+        <StatCard 
+          label="Sakit" 
+          value={stats.sakit} 
+          icon={<HeartPulse className="w-4 h-4 text-amber-600" />}
+          bg="bg-gradient-to-br from-amber-50/90 via-orange-50/40 to-amber-100/40 border-amber-200/80"
+          valueColor="text-amber-950"
+          labelColor="text-amber-800/80"
+          iconBg="bg-amber-100/80"
+        />
+        <StatCard 
+          label="Izin" 
+          value={stats.izin} 
+          icon={<Clock className="w-4 h-4 text-sky-600" />}
+          bg="bg-gradient-to-br from-sky-50/90 via-blue-50/40 to-sky-100/40 border-sky-200/80"
+          valueColor="text-sky-950"
+          labelColor="text-sky-800/80"
+          iconBg="bg-sky-100/80"
+        />
+        <StatCard 
+          label="Alpa" 
+          value={stats.alpa} 
+          icon={<AlertTriangle className="w-4 h-4 text-rose-600" />}
+          bg="bg-gradient-to-br from-rose-50/90 via-red-50/40 to-rose-100/40 border-rose-200/80"
+          valueColor="text-rose-950"
+          labelColor="text-rose-800/80"
+          iconBg="bg-rose-100/80"
+        />
       </div>
 
       {/* TABLE */}
-      <div className="flex-1 overflow-auto max-h-[calc(100vh-340px)] min-h-[320px] print:max-h-none print:overflow-visible print:min-h-0">
+      <div className="flex-1 overflow-auto max-h-[calc(100vh-300px)] min-h-[350px] print:max-h-none print:overflow-visible print:min-h-0">
         {isLoading ? (
           <div className="p-4 sm:p-6 space-y-4">
             {[1,2,3].map(i => <div key={i} className="h-12 bg-slate-100 animate-pulse rounded"></div>)}
@@ -360,11 +392,32 @@ export default function RekapHarian() {
   );
 }
 
-function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
+function StatCard({ 
+  label, 
+  value, 
+  icon,
+  bg,
+  valueColor,
+  labelColor,
+  iconBg
+}: { 
+  label: string; 
+  value: number; 
+  icon: React.ReactNode;
+  bg: string;
+  valueColor: string;
+  labelColor: string;
+  iconBg: string;
+}) {
   return (
-    <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm flex flex-col">
-      <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">{label}</span>
-      <span className={cn("text-2xl font-display font-bold mt-1", color)}>{value}</span>
+    <div className={cn("border rounded-xl px-3.5 py-2 sm:px-4 sm:py-2.5 shadow-xs flex items-center justify-between transition-all duration-200 hover:shadow-sm hover:-translate-y-0.5", bg)}>
+      <div className="flex flex-col min-w-0">
+        <span className={cn("text-[11px] font-semibold uppercase tracking-wider truncate", labelColor)}>{label}</span>
+        <span className={cn("text-xl sm:text-2xl font-display font-bold leading-tight mt-0.5", valueColor)}>{value}</span>
+      </div>
+      <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-2xs ml-2", iconBg)}>
+        {icon}
+      </div>
     </div>
   );
 }
