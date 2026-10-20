@@ -291,13 +291,13 @@ export default function RekapHarian() {
       </div>
 
       {/* TABLE */}
-      <div className="flex-1 overflow-auto p-4 sm:p-6">
+      <div className="flex-1 overflow-auto max-h-[calc(100vh-340px)] min-h-[320px] print:max-h-none print:overflow-visible print:min-h-0">
         {isLoading ? (
-          <div className="space-y-4">
+          <div className="p-4 sm:p-6 space-y-4">
             {[1,2,3].map(i => <div key={i} className="h-12 bg-slate-100 animate-pulse rounded"></div>)}
           </div>
         ) : filteredData.length === 0 ? (
-          <div className="py-20 flex flex-col items-center justify-center text-center">
+          <div className="py-20 p-4 sm:p-6 flex flex-col items-center justify-center text-center">
             <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4">
               <CheckCircle className="w-10 h-10" />
             </div>
@@ -311,18 +311,18 @@ export default function RekapHarian() {
             </p>
           </div>
         ) : (
-          <div>
+          <div className="relative">
             <table className="w-full text-sm text-left print-table">
-              <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-y border-slate-200">
-                <tr>
-                  <th className="px-4 py-3 font-medium w-12 text-center">No</th>
-                  <th className="px-4 py-3 font-medium w-32">NIS</th>
-                  <th className="px-4 py-3 font-medium">Nama Siswa</th>
-                  <th className="px-4 py-3 font-medium w-24">Kelas</th>
-                  <th className="px-4 py-3 font-medium w-16 text-center">L/P</th>
-                  <th className="px-4 py-3 font-medium w-28">Status</th>
-                  <th className="px-4 py-3 font-medium w-48">Wali Kelas</th>
-                  <th className="px-4 py-3 font-medium">Keterangan</th>
+              <thead className="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0 z-10 shadow-sm border-b border-slate-200 print:static print:shadow-none">
+                <tr className="bg-slate-50">
+                  <th className="px-4 py-3 font-medium w-12 text-center bg-slate-50">No</th>
+                  <th className="px-4 py-3 font-medium w-32 bg-slate-50">NIS</th>
+                  <th className="px-4 py-3 font-medium bg-slate-50">Nama Siswa</th>
+                  <th className="px-4 py-3 font-medium w-24 bg-slate-50">Kelas</th>
+                  <th className="px-4 py-3 font-medium w-16 text-center bg-slate-50">L/P</th>
+                  <th className="px-4 py-3 font-medium w-28 bg-slate-50">Status</th>
+                  <th className="px-4 py-3 font-medium w-48 bg-slate-50">Wali Kelas</th>
+                  <th className="px-4 py-3 font-medium bg-slate-50">Keterangan</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
