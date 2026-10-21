@@ -13,12 +13,18 @@ function App() {
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem('petugas_session');
+    // Bersihkan sesi lama dari localStorage agar tidak tersimpan permanen
+    localStorage.removeItem('petugas_session');
+    localStorage.removeItem('petugas_auth');
+
+    // Gunakan sessionStorage: sesi hanya bertahan selama tab browser aktif.
+    // Setiap kali browser/tab dibuka kembali, user diwajibkan login ulang.
+    const stored = sessionStorage.getItem('petugas_session');
     if (stored) {
       try {
         setCurrentUser(JSON.parse(stored) as Petugas);
       } catch {
-        localStorage.removeItem('petugas_session');
+        sessionStorage.removeItem('petugas_session');
       }
     }
     setIsChecking(false);
@@ -26,11 +32,12 @@ function App() {
 
   const handleLoginSuccess = (petugas: Petugas) => {
     setCurrentUser(petugas);
-    localStorage.setItem('petugas_session', JSON.stringify(petugas));
+    sessionStorage.setItem('petugas_session', JSON.stringify(petugas));
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
+    sessionStorage.removeItem('petugas_session');
     localStorage.removeItem('petugas_session');
     localStorage.removeItem('petugas_auth');
   };
