@@ -50,6 +50,17 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist'),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 1200,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-query': ['@tanstack/react-query'],
+          'vendor-excel': ['exceljs', 'xlsx', 'file-saver'],
+          'vendor-pdf': ['jspdf', 'jspdf-autotable'],
+        },
+      },
+    },
   },
   server: {
     port,

@@ -1,12 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import AbsensiApp from '@/pages/AbsensiApp';
 import Login from '@/pages/Login';
 import type { Petugas } from '@/types/database';
 
-const queryClient = new QueryClient();
+const AbsensiApp = lazy(() => import('@/pages/AbsensiApp'));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 menit: data di-cache, hindari spam network berulang
+      gcTime: 1000 * 60 * 30, // 30 menit di memori
+      refetchOnWindowFocus: false, // JANGAN refetch otomatis setiap kali pindah tab/window (penyebab utama lag di laptop lemah)
+      refetchOnReconnect: false,
+      retry: 1,
+    },
+  },
+});
 
 function App() {
   const [currentUser, setCurrentUser] = useState<Petugas | null>(null);
@@ -52,7 +63,16 @@ function App() {
         {!currentUser ? (
           <Login onSuccess={handleLoginSuccess} />
         ) : (
-          <AbsensiApp currentUser={currentUser} onLogout={handleLogout} />
+          <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-[#f0f4f8]">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-10 h-10 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
+                <p className="text-sm font-medium text-slate-500">Memuat aplikasi...</p>
+              </div>
+            </div>
+          }>
+            <AbsensiApp currentUser={currentUser} onLogout={handleLogout} />
+          </Suspense>
         )}
         <Toaster />
       </TooltipProvider>

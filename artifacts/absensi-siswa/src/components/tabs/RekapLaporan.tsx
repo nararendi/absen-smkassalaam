@@ -62,10 +62,11 @@ export default function RekapLaporan() {
     
     // Also track which dates have ANY attendance for this class
     const activeDates = new Set<string>();
+    const studentIdSet = new Set(studentIds);
 
     attendance.forEach(r => {
       // Check if student is in this class
-      if (classStudents.some(s => s.id === r.student_id)) {
+      if (studentIdSet.has(r.student_id)) {
         if (!attMap.has(r.student_id)) {
           attMap.set(r.student_id, new Map());
         }

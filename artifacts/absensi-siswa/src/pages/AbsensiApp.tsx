@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { BookOpenCheck, Calendar, Users, FileBarChart, LogOut, ShieldCheck } from 'lucide-react';
 import AbsensiHariIni from '@/components/tabs/AbsensiHariIni';
-import DataSiswa from '@/components/tabs/DataSiswa';
-import RekapHarian from '@/components/tabs/RekapHarian';
-import RekapLaporan from '@/components/tabs/RekapLaporan';
-import ManajemenPetugas from '@/components/tabs/ManajemenPetugas';
 import { cn } from '@/lib/utils';
 import type { Petugas } from '@/types/database';
+
+const DataSiswa = lazy(() => import('@/components/tabs/DataSiswa'));
+const RekapHarian = lazy(() => import('@/components/tabs/RekapHarian'));
+const RekapLaporan = lazy(() => import('@/components/tabs/RekapLaporan'));
+const ManajemenPetugas = lazy(() => import('@/components/tabs/ManajemenPetugas'));
 
 type Tab = 'hari-ini' | 'data-siswa' | 'rekap-harian' | 'rekap-laporan' | 'manajemen-petugas';
 
@@ -105,11 +106,18 @@ export default function AbsensiApp({ currentUser, onLogout }: AbsensiAppProps) {
       {/* MAIN CONTENT */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 print:p-0 print:max-w-none print:mx-0">
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden min-h-[calc(100vh-12rem)] print:shadow-none print:border-0 print:rounded-none print:overflow-visible print:min-h-0">
-          {activeTab === 'hari-ini' && <AbsensiHariIni />}
-          {activeTab === 'data-siswa' && <DataSiswa />}
-          {activeTab === 'rekap-harian' && <RekapHarian />}
-          {activeTab === 'rekap-laporan' && <RekapLaporan />}
-          {activeTab === 'manajemen-petugas' && isAdmin && <ManajemenPetugas currentUser={currentUser} />}
+          <Suspense fallback={
+            <div className="p-12 flex flex-col items-center justify-center gap-3">
+              <div className="w-8 h-8 border-3 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
+              <p className="text-sm text-slate-500">Memuat modul...</p>
+            </div>
+          }>
+            {activeTab === 'hari-ini' && <AbsensiHariIni />}
+            {activeTab === 'data-siswa' && <DataSiswa />}
+            {activeTab === 'rekap-harian' && <RekapHarian />}
+            {activeTab === 'rekap-laporan' && <RekapLaporan />}
+            {activeTab === 'manajemen-petugas' && isAdmin && <ManajemenPetugas currentUser={currentUser} />}
+          </Suspense>
         </div>
       </main>
     </div>

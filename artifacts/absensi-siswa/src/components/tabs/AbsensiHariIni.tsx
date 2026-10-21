@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Search, CheckCircle2, RotateCcw, Users } from 'lucide-react';
-import { useClasses, useStudents, useAttendance, useUpsertAttendance, useDeleteAttendance } from '@/lib/queries';
+import { useClasses, useStudents, useAttendance, useUpsertAttendance, useDeleteAttendance, useBulkUpsertAttendance, useBulkDeleteAttendance } from '@/lib/queries';
 import { cn, formatShortDate } from '@/lib/utils';
 import type { AttendanceStatus, Student } from '@/types/database';
 
@@ -15,6 +15,8 @@ export default function AbsensiHariIni() {
   
   const upsertAttendance = useUpsertAttendance();
   const deleteAttendance = useDeleteAttendance();
+  const bulkUpsert = useBulkUpsertAttendance();
+  const bulkDelete = useBulkDeleteAttendance();
 
   // Filter students based on class and search
   const filteredStudents = useMemo(() => {
@@ -71,9 +73,7 @@ export default function AbsensiHariIni() {
 
   const handleNoteChange = (studentId: string, note: string) => {
     const current = attendanceMap[studentId];
-    if (current) {
-      // Delay upsert or do it on blur to avoid too many requests. We'll do it right away but it might be chatty.
-      // A better approach is using local state for notes and syncing on blur, but let's implement basic for now.
+    if (current && current.note !== note) {
       upsertAttendance.mutate({
         date: selectedDate,
         student_id: studentId,
@@ -84,26 +84,25 @@ export default function AbsensiHariIni() {
   };
 
   const markAllPresent = () => {
-    filteredStudents.forEach(s => {
-      if (!attendanceMap[s.id]) {
-        upsertAttendance.mutate({
-          date: selectedDate,
-          student_id: s.id,
-          status: 'Hadir',
-          note: ''
-        });
-      }
+    const unrecorded = filteredStudents.filter(s => !attendanceMap[s.id]);
+    if (unrecorded.length === 0) return;
+    bulkUpsert.mutate({
+      date: selectedDate,
+      records: unrecorded.map(s => ({
+        student_id: s.id,
+        status: 'Hadir',
+        note: ''
+      }))
     });
   };
 
   const resetAll = () => {
     if (confirm('Yakin ingin mereset semua absensi yang tampil pada hari ini?')) {
-      filteredStudents.forEach(s => {
-        const current = attendanceMap[s.id];
-        if (current) {
-          deleteAttendance.mutate({ id: current.id, date: selectedDate });
-        }
-      });
+      const idsToDelete = filteredStudents
+        .map(s => attendanceMap[s.id]?.id)
+        .filter((id): id is string => Boolean(id));
+      if (idsToDelete.length === 0) return;
+      bulkDelete.mutate({ date: selectedDate, ids: idsToDelete });
     }
   };
 
@@ -327,7 +326,9 @@ function NoteInput({ value, onChange, disabled }: { value: string, onChange: (va
   const [localValue, setLocalValue] = useState(value);
 
   // Sync when prop changes externally
-  useMemo(() => { setLocalValue(value); }, [value]);
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
 
   const handleBlur = () => {
     if (localValue !== value) {

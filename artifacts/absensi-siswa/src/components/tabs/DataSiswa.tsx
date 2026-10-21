@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { Download, Upload, Plus, School, Trash2, Edit2, Search } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useClasses, useStudents, useUpsertStudent, useDeleteStudent, useCreateClass } from '@/lib/queries';
@@ -29,15 +29,25 @@ export default function DataSiswa() {
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 50;
 
-  const filteredStudents = students.filter(s => {
-    if (selectedClass !== 'ALL' && s.kelas !== selectedClass) return false;
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      return s.nama.toLowerCase().includes(q) || s.nis.toLowerCase().includes(q);
-    }
-    return true;
-  });
+  const filteredStudents = useMemo(() => {
+    return students.filter(s => {
+      if (selectedClass !== 'ALL' && s.kelas !== selectedClass) return false;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        return s.nama.toLowerCase().includes(q) || s.nis.toLowerCase().includes(q);
+      }
+      return true;
+    });
+  }, [students, selectedClass, searchQuery]);
+
+  const totalPages = Math.ceil(filteredStudents.length / pageSize) || 1;
+  const paginatedStudents = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredStudents.slice(start, start + pageSize);
+  }, [filteredStudents, currentPage]);
 
   const handleDownloadTemplate = () => {
     const ws = XLSX.utils.json_to_sheet([
@@ -196,7 +206,7 @@ export default function DataSiswa() {
       <div className="px-4 sm:px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => setSelectedClass('ALL')}
+            onClick={() => { setSelectedClass('ALL'); setCurrentPage(1); }}
             className={cn(
               "px-3 py-1.5 text-xs font-medium rounded-full transition-colors border",
               selectedClass === 'ALL' 
@@ -209,13 +219,13 @@ export default function DataSiswa() {
           {classes.map(c => (
             <button
               key={c.id}
-              onClick={() => setSelectedClass(c.name)}
+              onClick={() => { setSelectedClass(c.name); setCurrentPage(1); }}
               className={cn(
-                "px-3 py-1.5 text-xs font-medium rounded-full transition-colors border",
-                selectedClass === c.name 
-                  ? "bg-primary text-white border-primary" 
-                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
-              )}
+              "px-3 py-1.5 text-xs font-medium rounded-full transition-colors border",
+              selectedClass === c.name 
+                ? "bg-primary text-white border-primary" 
+                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
+            )}
             >
               {c.name}
             </button>
@@ -229,7 +239,7 @@ export default function DataSiswa() {
             placeholder="Cari siswa..." 
             className="py-2 w-full text-sm outline-none bg-transparent"
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
           />
         </div>
       </div>
@@ -260,9 +270,9 @@ export default function DataSiswa() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredStudents.map((s, idx) => (
+              {paginatedStudents.map((s, idx) => (
                 <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-4 py-3 text-center text-slate-400">{idx + 1}</td>
+                  <td className="px-4 py-3 text-center text-slate-400">{(currentPage - 1) * pageSize + idx + 1}</td>
                   <td className="px-4 py-3 font-mono text-slate-600">{s.nis}</td>
                   <td className="px-4 py-3 font-medium text-slate-900">{s.nama}</td>
                   <td className="px-4 py-3">
@@ -302,6 +312,34 @@ export default function DataSiswa() {
           </table>
         )}
       </div>
+
+      {/* Pagination Footer */}
+      {filteredStudents.length > pageSize && (
+        <div className="p-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-500">
+          <span>
+            Menampilkan {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, filteredStudents.length)} dari {filteredStudents.length} siswa
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-2.5 py-1 rounded bg-white border border-slate-200 hover:bg-slate-100 disabled:opacity-40 transition-colors"
+            >
+              Sebelumnya
+            </button>
+            <span className="font-medium text-slate-700">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-2.5 py-1 rounded bg-white border border-slate-200 hover:bg-slate-100 disabled:opacity-40 transition-colors"
+            >
+              Selanjutnya
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
       {isStudentModalOpen && (
