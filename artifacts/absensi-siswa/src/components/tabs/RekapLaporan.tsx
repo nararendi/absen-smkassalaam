@@ -143,12 +143,12 @@ export default function RekapLaporan() {
           const record = studentRecords.get(date);
           let finalStatus = '-';
           if (record) {
-            finalStatus = record.status.charAt(0);
+            finalStatus = record.status === 'TTS' ? 'T' : record.status.charAt(0);
           } else if (!isWeekend) {
             finalStatus = 'H';
           }
 
-          if (finalStatus === 'H') h++;
+          if (finalStatus === 'H' || finalStatus === 'T') h++;
           else if (finalStatus === 'S') sakit++;
           else if (finalStatus === 'I') i++;
           else if (finalStatus === 'A') a++;
@@ -275,6 +275,8 @@ export default function RekapLaporan() {
           const val = cell.value as string;
           if (val === 'H') {
             cell.font = { color: { argb: 'FF16A34A' }, bold: true }; // Emerald 600
+          } else if (val === 'T') {
+            cell.font = { color: { argb: 'FF7E22CE' }, bold: true }; // Purple 700 (TTS)
           } else if (val === 'S' || val === 'I') {
             cell.font = { color: { argb: 'FFD97706' }, bold: true }; // Amber 600
           } else if (val === 'A') {
@@ -393,6 +395,9 @@ export default function RekapLaporan() {
           const val = data.cell.raw;
           if (val === 'H') {
             data.cell.styles.textColor = [22, 163, 74];
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'T') {
+            data.cell.styles.textColor = [126, 34, 206]; // Purple 700 (TTS)
             data.cell.styles.fontStyle = 'bold';
           } else if (val === 'S' || val === 'I') {
             data.cell.styles.textColor = [217, 119, 6];

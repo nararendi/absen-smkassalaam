@@ -65,11 +65,11 @@ export default function AbsensiHariIni() {
       // Create or update
       let newNote = current?.note || '';
       if (status === 'TTS') {
-        // Auto-fill 'Tidak Tap SIM' if note is empty
-        if (!newNote || newNote.trim() === '') {
-          newNote = 'Tidak Tap SIM';
+        // Auto-fill 'Hadir Tidak Tap SIM' if note is empty or was previous default
+        if (!newNote || newNote.trim() === '' || newNote === 'Tidak Tap SIM') {
+          newNote = 'Hadir Tidak Tap SIM';
         }
-      } else if (current?.status === 'TTS' && newNote === 'Tidak Tap SIM') {
+      } else if (current?.status === 'TTS' && (newNote === 'Hadir Tidak Tap SIM' || newNote === 'Tidak Tap SIM')) {
         // Clear default auto-note if changing away from TTS
         newNote = '';
       }
