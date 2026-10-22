@@ -664,9 +664,9 @@ export default function RekapLaporan() {
   };
 
   return (
-    <div className="flex flex-col h-full animate-in fade-in duration-300">
+    <div className="flex flex-col h-full min-h-0 animate-in fade-in duration-300">
       {/* TOOLBAR */}
-      <div className="p-4 sm:p-6 border-b border-slate-200 bg-white flex flex-col lg:flex-row lg:items-center gap-4 justify-between no-print">
+      <div className="shrink-0 p-4 sm:p-5 border-b border-slate-200 bg-white flex flex-col lg:flex-row lg:items-center gap-4 justify-between no-print">
         <div className="flex flex-wrap gap-3">
           <select 
             className="py-2 px-3 bg-slate-100 font-medium border border-slate-200 rounded-md text-sm shadow-sm outline-none focus:ring-2 focus:ring-primary/20 text-primary"
@@ -769,7 +769,7 @@ export default function RekapLaporan() {
       </div>
 
       {/* MATRIX TABLE */}
-      <div className="flex-1 overflow-auto p-4 sm:p-6 print:p-0 print:overflow-visible">
+      <div className="flex-1 overflow-auto min-h-0 p-4 sm:p-6 print:p-0 print:overflow-visible">
         {isLoading ? (
           <div className="space-y-4">
             {[1,2,3].map(i => <div key={i} className="h-12 bg-slate-100 animate-pulse rounded"></div>)}

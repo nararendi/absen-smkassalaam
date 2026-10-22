@@ -109,9 +109,9 @@ export default function AbsensiHariIni() {
   const isLoading = loadingClasses || loadingStudents || loadingAttendance;
 
   return (
-    <div className="flex flex-col h-full animate-in fade-in duration-300">
+    <div className="flex flex-col h-full min-h-0 animate-in fade-in duration-300">
       {/* TOOLBAR */}
-      <div className="p-4 sm:p-6 border-b border-slate-200 bg-slate-50/50 flex flex-col lg:flex-row lg:items-center gap-4 lg:justify-between">
+      <div className="shrink-0 p-4 sm:p-5 border-b border-slate-200 bg-slate-50/60 flex flex-col lg:flex-row lg:items-center gap-4 lg:justify-between">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-md px-3 shadow-sm focus-within:ring-2 focus-within:ring-primary/20">
             <Search className="w-4 h-4 text-slate-400" />
@@ -162,7 +162,7 @@ export default function AbsensiHariIni() {
       </div>
 
       {/* STATS */}
-      <div className="px-4 sm:px-6 py-3 border-b border-slate-100 bg-white flex flex-wrap gap-x-6 gap-y-2 text-sm">
+      <div className="shrink-0 px-4 sm:px-6 py-2.5 border-b border-slate-200 bg-white flex flex-wrap gap-x-6 gap-y-2 text-sm">
         <div className="flex items-center gap-2">
           <span className="text-slate-500">Total Siswa:</span>
           <span className="font-semibold text-slate-900">{stats.total}</span>
@@ -191,7 +191,7 @@ export default function AbsensiHariIni() {
       </div>
 
       {/* TABLE */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto min-h-0 relative">
         {isLoading ? (
           <div className="p-8 space-y-4">
             {[1,2,3,4,5].map(i => (
@@ -207,14 +207,14 @@ export default function AbsensiHariIni() {
             <p className="text-sm mt-1">Pilih kelas yang berbeda atau tambah siswa di tab Data Siswa.</p>
           </div>
         ) : (
-          <table className="w-full text-sm text-left">
-            <thead className="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0 z-10 shadow-sm">
+          <table className="w-full text-sm text-left border-separate border-spacing-0">
+            <thead className="text-xs text-slate-600 uppercase bg-slate-50 sticky top-0 z-10 shadow-xs">
               <tr>
-                <th className="px-4 py-3 font-medium w-12 text-center">No</th>
-                <th className="px-4 py-3 font-medium">Siswa</th>
-                {selectedClass === 'ALL' && <th className="px-4 py-3 font-medium">Kelas</th>}
-                <th className="px-4 py-3 font-medium w-64">Status Kehadiran</th>
-                <th className="px-4 py-3 font-medium w-64">Keterangan</th>
+                <th className="px-4 py-3 font-semibold w-12 text-center bg-slate-50 border-b border-slate-200 sticky top-0 z-10">No</th>
+                <th className="px-4 py-3 font-semibold bg-slate-50 border-b border-slate-200 sticky top-0 z-10">Siswa</th>
+                {selectedClass === 'ALL' && <th className="px-4 py-3 font-semibold bg-slate-50 border-b border-slate-200 sticky top-0 z-10">Kelas</th>}
+                <th className="px-4 py-3 font-semibold w-64 bg-slate-50 border-b border-slate-200 sticky top-0 z-10">Status Kehadiran</th>
+                <th className="px-4 py-3 font-semibold w-64 bg-slate-50 border-b border-slate-200 sticky top-0 z-10">Keterangan</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -287,7 +287,7 @@ export default function AbsensiHariIni() {
       </div>
 
       {/* FOOTER */}
-      <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-sm">
+      <div className="shrink-0 p-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-sm">
         <span className="text-slate-500">
           Terisi: <strong className="text-slate-900">{stats.filled}</strong> / {stats.total} siswa
         </span>

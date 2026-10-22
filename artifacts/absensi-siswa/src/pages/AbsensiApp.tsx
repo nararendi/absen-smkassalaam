@@ -21,9 +21,9 @@ export default function AbsensiApp({ currentUser, onLogout }: AbsensiAppProps) {
   const isAdmin = currentUser.role === 'admin';
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-[#f0f4f8] font-sans">
+    <div className="h-[100dvh] flex flex-col bg-[#f0f4f8] font-sans overflow-hidden">
       {/* HEADER */}
-      <header className="no-print bg-gradient-to-r from-[#0a1628] via-[#0f2d5c] to-[#1565c0] text-white shadow-lg sticky top-0 z-20">
+      <header className="no-print bg-gradient-to-r from-[#0a1628] via-[#0f2d5c] to-[#1565c0] text-white shadow-lg shrink-0 z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center h-auto sm:h-16 py-4 sm:py-0 gap-4 sm:gap-0">
             <div className="flex items-center justify-between w-full sm:w-auto">
@@ -104,8 +104,8 @@ export default function AbsensiApp({ currentUser, onLogout }: AbsensiAppProps) {
       </header>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 print:p-0 print:max-w-none print:mx-0">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden min-h-[calc(100vh-12rem)] print:shadow-none print:border-0 print:rounded-none print:overflow-visible print:min-h-0">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 lg:p-6 print:p-0 print:max-w-none print:mx-0 flex flex-col min-h-0 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex-1 flex flex-col min-h-0 overflow-hidden print:shadow-none print:border-0 print:rounded-none print:overflow-visible">
           <Suspense fallback={
             <div className="p-12 flex flex-col items-center justify-center gap-3">
               <div className="w-8 h-8 border-3 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />

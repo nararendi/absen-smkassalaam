@@ -156,9 +156,9 @@ export default function DataSiswa() {
   const isLoading = loadingClasses || loadingStudents;
 
   return (
-    <div className="flex flex-col h-full animate-in fade-in duration-300">
+    <div className="flex flex-col h-full min-h-0 animate-in fade-in duration-300">
       {/* ACTION BAR */}
-      <div className="p-4 sm:p-6 border-b border-slate-200 bg-white flex flex-wrap gap-4 justify-between items-center">
+      <div className="shrink-0 p-4 sm:p-5 border-b border-slate-200 bg-white flex flex-wrap gap-4 justify-between items-center">
         <div className="flex gap-2">
           <button 
             onClick={handleDownloadTemplate}
@@ -203,7 +203,7 @@ export default function DataSiswa() {
       </div>
 
       {/* FILTER BAR */}
-      <div className="px-4 sm:px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+      <div className="shrink-0 px-4 sm:px-6 py-3 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => { setSelectedClass('ALL'); setCurrentPage(1); }}
@@ -245,7 +245,7 @@ export default function DataSiswa() {
       </div>
 
       {/* TABLE */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto min-h-0 relative">
         {isLoading ? (
           <div className="p-8 space-y-4">
             {[1,2,3,4,5].map(i => (
@@ -258,15 +258,15 @@ export default function DataSiswa() {
             <p className="text-sm mt-1">Silakan tambah siswa atau import dari Excel.</p>
           </div>
         ) : (
-          <table className="w-full text-sm text-left">
-            <thead className="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0 z-10 shadow-sm border-b border-slate-200">
+          <table className="w-full text-sm text-left border-separate border-spacing-0">
+            <thead className="text-xs text-slate-600 uppercase bg-slate-50 sticky top-0 z-10 shadow-xs">
               <tr>
-                <th className="px-4 py-3 font-medium w-12 text-center">No</th>
-                <th className="px-4 py-3 font-medium w-32">NIS</th>
-                <th className="px-4 py-3 font-medium">Nama Lengkap</th>
-                <th className="px-4 py-3 font-medium w-24">Kelas</th>
-                <th className="px-4 py-3 font-medium w-32 text-center">L / P</th>
-                <th className="px-4 py-3 font-medium w-24 text-center">Aksi</th>
+                <th className="px-4 py-3 font-semibold w-12 text-center bg-slate-50 border-b border-slate-200 sticky top-0 z-10">No</th>
+                <th className="px-4 py-3 font-semibold w-32 bg-slate-50 border-b border-slate-200 sticky top-0 z-10">NIS</th>
+                <th className="px-4 py-3 font-semibold bg-slate-50 border-b border-slate-200 sticky top-0 z-10">Nama Lengkap</th>
+                <th className="px-4 py-3 font-semibold w-24 bg-slate-50 border-b border-slate-200 sticky top-0 z-10">Kelas</th>
+                <th className="px-4 py-3 font-semibold w-32 text-center bg-slate-50 border-b border-slate-200 sticky top-0 z-10">L / P</th>
+                <th className="px-4 py-3 font-semibold w-24 text-center bg-slate-50 border-b border-slate-200 sticky top-0 z-10">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -315,7 +315,7 @@ export default function DataSiswa() {
 
       {/* Pagination Footer */}
       {filteredStudents.length > pageSize && (
-        <div className="p-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-500">
+        <div className="shrink-0 p-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-500">
           <span>
             Menampilkan {(currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, filteredStudents.length)} dari {filteredStudents.length} siswa
           </span>
