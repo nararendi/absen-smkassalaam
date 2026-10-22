@@ -112,7 +112,8 @@ export default function RekapHarian() {
     });
 
     filteredData.forEach((item, i) => {
-      const status = item.record?.status || 'Hadir';
+      const rawStatus = item.record?.status || 'Hadir';
+      const status = rawStatus === 'TTS' ? 'SIM' : rawStatus;
       const row = worksheet.addRow([
         i + 1,
         item.nis,
@@ -176,17 +177,20 @@ export default function RekapHarian() {
     doc.setFont('helvetica', 'normal');
     doc.text(`Kelas: ${selectedClass === 'ALL' ? 'Semua Kelas' : selectedClass}   |   Tanggal: ${formatDate(selectedDate)}`, doc.internal.pageSize.getWidth() / 2, 29, { align: 'center' });
 
-    const headers = ['No', 'NIS', 'Nama Siswa', 'Kelas', 'L/P', 'Status', 'Wali Kelas', 'Keterangan'];
-    const rows = filteredData.map((item, i) => [
-      i + 1,
-      item.nis,
-      item.nama,
-      item.kelas,
-      item.gender,
-      item.record?.status || 'Hadir',
-      waliMap[item.kelas?.trim()] || '-',
-      item.record?.note || '-'
-    ]);
+    const rows = filteredData.map((item, i) => {
+      const rawStatus = item.record?.status || 'Hadir';
+      const status = rawStatus === 'TTS' ? 'SIM' : rawStatus;
+      return [
+        i + 1,
+        item.nis,
+        item.nama,
+        item.kelas,
+        item.gender,
+        status,
+        waliMap[item.kelas?.trim()] || '-',
+        item.record?.note || '-'
+      ];
+    });
 
     autoTable(doc, {
       startY: 35,
@@ -399,7 +403,8 @@ export default function RekapHarian() {
             </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 {filteredData.map((s, idx) => {
-                  const status = s.record?.status || 'Hadir';
+                  const rawStatus = s.record?.status || 'Hadir';
+                  const status = rawStatus === 'TTS' ? 'SIM' : rawStatus;
                   return (
                     <tr key={s.id} className="hover:bg-slate-50/50">
                       <td className="px-4 py-3 text-center">{idx + 1}</td>

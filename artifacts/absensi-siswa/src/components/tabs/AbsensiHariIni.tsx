@@ -35,7 +35,8 @@ export default function AbsensiHariIni() {
   const attendanceMap = useMemo(() => {
     const map: Record<string, { id: string; status: AttendanceStatus; note: string }> = {};
     attendance.forEach(r => {
-      map[r.student_id] = { id: r.id, status: r.status, note: r.note || '' };
+      const status = (r.status === 'TTS' ? 'SIM' : r.status) as AttendanceStatus;
+      map[r.student_id] = { id: r.id, status, note: r.note || '' };
     });
     return map;
   }, [attendance]);

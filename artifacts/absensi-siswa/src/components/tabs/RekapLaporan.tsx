@@ -167,11 +167,12 @@ export default function RekapLaporan() {
             const dateFormatted = `${parseInt(d)} ${MONTHS[parseInt(m) - 1]} ${y}`;
             const noteText = rec.note ? rec.note.trim() : '';
             const idxNum = notes.length + 1;
-            const displayText = `${idxNum}. Tanggal ${dateFormatted} (${rec.status})${noteText ? `: ${noteText}` : ''}`;
+            const normStatus = (rec.status === 'TTS' ? 'SIM' : rec.status) as AttendanceStatus;
+            const displayText = `${idxNum}. Tanggal ${dateFormatted} (${normStatus})${noteText ? `: ${noteText}` : ''}`;
             notes.push({
               date,
               dateFormatted,
-              status: rec.status,
+              status: normStatus,
               note: noteText,
               displayText
             });
