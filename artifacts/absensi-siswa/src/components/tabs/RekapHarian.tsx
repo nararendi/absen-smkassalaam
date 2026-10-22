@@ -345,7 +345,7 @@ export default function RekapHarian() {
       </div>
 
       {/* TABLE */}
-      <div className="flex-1 overflow-auto min-h-0 print:overflow-visible relative print:h-auto print:block">
+      <div className="flex-1 overflow-auto min-h-0 print:overflow-visible relative print:h-auto print:block print:pr-1">
         {isLoading ? (
           <div className="p-4 sm:p-6 space-y-4">
             {[1,2,3].map(i => <div key={i} className="h-12 bg-slate-100 animate-pulse rounded"></div>)}

@@ -174,12 +174,14 @@
   /* ── Rekap Harian Print Table ─────────────────────── */
   .print-table-harian {
     border-collapse: collapse !important;
-    width: 100% !important;
+    width: 99.8% !important;
+    max-width: 99.8% !important;
+    margin: 6px 0 12px 0 !important;
     table-layout: fixed !important;
     font-size: 8.5pt !important;
     height: auto !important;
-    margin-top: 6px !important;
-    margin-bottom: 12px !important;
+    border: 1pt solid #334155 !important;
+    border-right: 1.5pt solid #334155 !important;
   }
 
   .print-table-harian tbody tr {
@@ -197,6 +199,18 @@
     line-height: 1.25 !important;
     vertical-align: middle !important;
     height: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Explicit outer borders to prevent right border clipping */
+  .print-table-harian th:first-child,
+  .print-table-harian td:first-child {
+    border-left: 1pt solid #334155 !important;
+  }
+
+  .print-table-harian th:last-child,
+  .print-table-harian td:last-child {
+    border-right: 1.5pt solid #334155 !important;
   }
 
   .print-table-harian thead th {
