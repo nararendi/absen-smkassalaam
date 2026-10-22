@@ -42,17 +42,18 @@ export default function AbsensiHariIni() {
 
   // Calculate stats
   const stats = useMemo(() => {
-    let hadir = 0, sakit = 0, izin = 0, alpa = 0;
+    let hadir = 0, sakit = 0, izin = 0, alpa = 0, tts = 0;
     filteredStudents.forEach(s => {
       const status = attendanceMap[s.id]?.status;
       if (status === 'Hadir') hadir++;
       else if (status === 'Sakit') sakit++;
       else if (status === 'Izin') izin++;
       else if (status === 'Alpa') alpa++;
+      else if (status === 'TTS') tts++;
     });
     const total = filteredStudents.length;
-    const filled = hadir + sakit + izin + alpa;
-    return { total, filled, hadir, sakit, izin, alpa, percentHadir: total ? Math.round((hadir / total) * 100) : 0 };
+    const filled = hadir + sakit + izin + alpa + tts;
+    return { total, filled, hadir, sakit, izin, alpa, tts, percentHadir: total ? Math.round(((hadir + tts) / total) * 100) : 0 };
   }, [filteredStudents, attendanceMap]);
 
   const handleStatusToggle = (studentId: string, status: AttendanceStatus) => {
@@ -62,11 +63,22 @@ export default function AbsensiHariIni() {
       deleteAttendance.mutate({ id: current.id, date: selectedDate });
     } else {
       // Create or update
+      let newNote = current?.note || '';
+      if (status === 'TTS') {
+        // Auto-fill 'Tidak Tap SIM' if note is empty
+        if (!newNote || newNote.trim() === '') {
+          newNote = 'Tidak Tap SIM';
+        }
+      } else if (current?.status === 'TTS' && newNote === 'Tidak Tap SIM') {
+        // Clear default auto-note if changing away from TTS
+        newNote = '';
+      }
+
       upsertAttendance.mutate({
         date: selectedDate,
         student_id: studentId,
         status,
-        note: current?.note || ''
+        note: newNote
       });
     }
   };
@@ -188,6 +200,11 @@ export default function AbsensiHariIni() {
           <span className="text-slate-500">Alpa:</span>
           <span className="font-semibold text-rose-700">{stats.alpa}</span>
         </div>
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+          <span className="text-slate-500">TTS:</span>
+          <span className="font-semibold text-purple-700">{stats.tts}</span>
+        </div>
       </div>
 
       {/* TABLE */}
@@ -269,6 +286,14 @@ export default function AbsensiHariIni() {
                           onClick={() => handleStatusToggle(s.id, 'Alpa')}
                           tooltip="Alpa"
                         />
+                        <StatusButton 
+                          label="TTS" 
+                          active={status === 'TTS'} 
+                          colorClass="bg-purple-600 text-white hover:bg-purple-700 border-purple-700" 
+                          idleClass="text-slate-600 hover:bg-slate-200 bg-white border-slate-200"
+                          onClick={() => handleStatusToggle(s.id, 'TTS')}
+                          tooltip="TTS (Tidak Tap SIM)"
+                        />
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -312,7 +337,8 @@ function StatusButton({ label, active, colorClass, idleClass, onClick, tooltip }
       onClick={onClick}
       title={tooltip}
       className={cn(
-        "w-8 h-8 rounded flex items-center justify-center text-xs font-semibold border transition-all duration-200",
+        "h-8 rounded flex items-center justify-center font-semibold border transition-all duration-200",
+        label.length > 1 ? "px-2 min-w-[34px] text-[11px]" : "w-8 text-xs",
         active ? colorClass + " shadow-sm scale-105" : idleClass
       )}
     >

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Download, Printer, CheckCircle, FileText, UserX, HeartPulse, Clock, AlertTriangle } from 'lucide-react';
+import { Download, Printer, CheckCircle, FileText, UserX, HeartPulse, Clock, AlertTriangle, CreditCard } from 'lucide-react';
 import { useClasses, useStudents, useAttendance, useSchoolInfo, useWaliKelas } from '@/lib/queries';
 import { cn, formatShortDate, formatDate } from '@/lib/utils';
 import ExcelJS from 'exceljs';
@@ -7,7 +7,7 @@ import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-type FilterStatus = 'ALL' | 'Sakit' | 'Izin' | 'Alpa';
+type FilterStatus = 'ALL' | 'Sakit' | 'Izin' | 'Alpa' | 'TTS';
 
 export default function RekapHarian() {
   const [selectedClass, setSelectedClass] = useState<string>('ALL');
@@ -44,17 +44,17 @@ export default function RekapHarian() {
       record: attendanceMap.get(s.id) || null
     }));
 
-    // Rekap harian only shows absent students (S/I/A). 'ALL' means all absent statuses.
+    // Rekap harian shows absent/special attendance (S/I/A/TTS). 'ALL' means all non-Hadir statuses.
     return enriched.filter(item => {
       const status = item.record?.status;
       if (!status || status === 'Hadir') return false; // always hide Hadir
-      if (selectedStatus === 'ALL') return true; // show all S/I/A
+      if (selectedStatus === 'ALL') return true; // show all S/I/A/TTS
       return status === selectedStatus;
     });
   }, [students, attendance, selectedClass, selectedStatus]);
 
   const stats = useMemo(() => {
-    let sakit = 0, izin = 0, alpa = 0;
+    let sakit = 0, izin = 0, alpa = 0, tts = 0;
     
     // Base stats on the filtered class students, not just the currently displayed list
     const classStudents = selectedClass === 'ALL' ? students : students.filter(s => s.kelas === selectedClass);
@@ -65,14 +65,16 @@ export default function RekapHarian() {
       if (status === 'Sakit') sakit++;
       else if (status === 'Izin') izin++;
       else if (status === 'Alpa') alpa++;
+      else if (status === 'TTS') tts++;
     });
     
     return { 
-      total: sakit + izin + alpa, 
+      total: sakit + izin + alpa + tts, 
       sakit, 
       izin, 
       alpa,
-      isPerfect: (sakit + izin + alpa) === 0 && classStudents.length > 0
+      tts,
+      isPerfect: (sakit + izin + alpa + tts) === 0 && classStudents.length > 0
     };
   }, [students, attendance, selectedClass]);
 
@@ -134,6 +136,8 @@ export default function RekapHarian() {
             cell.font = { color: { argb: 'FFD97706' }, bold: true }; // Amber
           } else if (status === 'Alpa') {
             cell.font = { color: { argb: 'FFDC2626' }, bold: true }; // Rose
+          } else if (status === 'TTS') {
+            cell.font = { color: { argb: 'FF7E22CE' }, bold: true }; // Purple
           }
         }
       });
@@ -204,6 +208,9 @@ export default function RekapHarian() {
           } else if (val === 'Alpa') {
             data.cell.styles.textColor = [220, 38, 38];
             data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'TTS') {
+            data.cell.styles.textColor = [126, 34, 206];
+            data.cell.styles.fontStyle = 'bold';
           }
         }
       }
@@ -242,10 +249,11 @@ export default function RekapHarian() {
             value={selectedStatus}
             onChange={e => setSelectedStatus(e.target.value as FilterStatus)}
           >
-            <option value="ALL">S + I + A (Semua)</option>
+            <option value="ALL">Semua Tidak Hadir & TTS</option>
             <option value="Sakit">Sakit Saja</option>
             <option value="Izin">Izin Saja</option>
             <option value="Alpa">Alpa Saja</option>
+            <option value="TTS">TTS Saja</option>
           </select>
         </div>
 
@@ -291,23 +299,24 @@ export default function RekapHarian() {
           <div className="flex justify-between items-center text-xs mt-2 text-slate-800 border-b border-slate-300 pb-2">
             <span>Kelas: <strong>{selectedClass === 'ALL' ? 'Semua Kelas' : selectedClass}</strong></span>
             <span>Tanggal: <strong>{formatDate(selectedDate)}</strong></span>
-            <span>Filter: <strong>{selectedStatus === 'ALL' ? 'Semua Tidak Hadir (S/I/A)' : selectedStatus}</strong></span>
+            <span>Filter: <strong>{selectedStatus === 'ALL' ? 'Semua Tidak Hadir (S/I/A/TTS)' : selectedStatus}</strong></span>
           </div>
         </div>
         
         {/* Ringkasan Jumlah */}
-        <div className="flex gap-4 text-xs font-medium py-1 px-2.5 bg-slate-100 border border-slate-300 rounded mb-2">
-          <span>Total Tidak Hadir: <strong>{stats.total} siswa</strong></span>
+        <div className="flex flex-wrap gap-4 text-xs font-medium py-1 px-2.5 bg-slate-100 border border-slate-300 rounded mb-2">
+          <span>Total: <strong>{stats.total} siswa</strong></span>
           <span>• Sakit: <strong>{stats.sakit}</strong></span>
           <span>• Izin: <strong>{stats.izin}</strong></span>
           <span>• Alpa: <strong>{stats.alpa}</strong></span>
+          <span>• TTS: <strong>{stats.tts}</strong></span>
         </div>
       </div>
 
       {/* SUMMARY CARDS */}
-      <div className="shrink-0 px-4 sm:px-6 py-2.5 sm:py-3 bg-slate-50/50 border-b border-slate-200 grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 no-print">
+      <div className="shrink-0 px-4 sm:px-6 py-2.5 sm:py-3 bg-slate-50/50 border-b border-slate-200 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3.5 no-print">
         <StatCard 
-          label="Total Tidak Hadir" 
+          label="Total Rekap" 
           value={stats.total} 
           icon={<UserX className="w-4 h-4 text-indigo-600" />}
           bg="bg-gradient-to-br from-indigo-50/90 via-slate-50 to-indigo-100/40 border-indigo-200/70"
@@ -341,6 +350,15 @@ export default function RekapHarian() {
           valueColor="text-rose-950"
           labelColor="text-rose-800/80"
           iconBg="bg-rose-100/80"
+        />
+        <StatCard 
+          label="TTS (Tidak Tap)" 
+          value={stats.tts} 
+          icon={<CreditCard className="w-4 h-4 text-purple-600" />}
+          bg="bg-gradient-to-br from-purple-50/90 via-violet-50/40 to-purple-100/40 border-purple-200/80"
+          valueColor="text-purple-950"
+          labelColor="text-purple-800/80"
+          iconBg="bg-purple-100/80"
         />
       </div>
 
@@ -394,6 +412,7 @@ export default function RekapHarian() {
                           status === 'Hadir' ? "bg-emerald-100 text-emerald-700" :
                           status === 'Sakit' ? "bg-amber-100 text-amber-700" :
                           status === 'Izin' ? "bg-sky-100 text-sky-700" :
+                          status === 'TTS' ? "bg-purple-100 text-purple-700" :
                           "bg-rose-100 text-rose-700"
                         )}>
                           {status}
