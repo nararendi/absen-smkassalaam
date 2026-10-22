@@ -74,12 +74,15 @@ export default function AbsensiApp({ currentUser, onLogout }: AbsensiAppProps) {
                   icon={<FileBarChart className="w-4 h-4" />}
                   label="Laporan"
                 />
-                <TabButton
-                  active={activeTab === 'data-siswa'}
-                  onClick={() => setActiveTab('data-siswa')}
-                  icon={<Users className="w-4 h-4" />}
-                  label="Data Siswa"
-                />
+                {isAdmin && (
+                  <TabButton
+                    active={activeTab === 'data-siswa'}
+                    onClick={() => setActiveTab('data-siswa')}
+                    icon={<Users className="w-4 h-4" />}
+                    label="Data Siswa"
+                    isAdmin
+                  />
+                )}
                 {isAdmin && (
                   <TabButton
                     active={activeTab === 'manajemen-petugas'}
@@ -113,7 +116,7 @@ export default function AbsensiApp({ currentUser, onLogout }: AbsensiAppProps) {
             </div>
           }>
             {activeTab === 'hari-ini' && <AbsensiHariIni />}
-            {activeTab === 'data-siswa' && <DataSiswa />}
+            {activeTab === 'data-siswa' && isAdmin && <DataSiswa />}
             {activeTab === 'rekap-harian' && <RekapHarian />}
             {activeTab === 'rekap-laporan' && <RekapLaporan />}
             {activeTab === 'manajemen-petugas' && isAdmin && <ManajemenPetugas currentUser={currentUser} />}
