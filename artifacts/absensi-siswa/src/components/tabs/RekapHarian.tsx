@@ -384,7 +384,6 @@ export default function RekapHarian() {
                 })}
               </tbody>
             </table>
-          </div>
         )}
       </div>
     </div>
