@@ -281,7 +281,7 @@ export default function RekapHarian() {
             {schoolInfo?.nama_sekolah || 'SMK ASSALAAM BANDUNG'}
           </h1>
           <p className="text-xs text-slate-600 mt-0.5">
-            {schoolInfo?.alamat || 'Jl. Situtarate - Terusan Cibaduyut, Kab. Bandung'}
+            {schoolInfo?.kota ? `Jl. Situtarate - Terusan Cibaduyut, ${schoolInfo.kota}` : 'Jl. Situtarate - Terusan Cibaduyut, Kab. Bandung'}
           </p>
         </div>
         <div className="text-center mt-3 mb-2">
