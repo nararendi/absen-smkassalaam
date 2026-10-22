@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, CheckCircle2, RotateCcw, Users } from 'lucide-react';
 import { useClasses, useStudents, useAttendance, useUpsertAttendance, useDeleteAttendance, useBulkUpsertAttendance, useBulkDeleteAttendance } from '@/lib/queries';
 import { cn, formatShortDate } from '@/lib/utils';
