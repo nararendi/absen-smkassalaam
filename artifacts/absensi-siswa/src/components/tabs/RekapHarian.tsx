@@ -274,12 +274,34 @@ export default function RekapHarian() {
         </div>
       </div>
 
-      {/* PRINT HEADER */}
-      <div className="hidden print-only mb-6 text-center text-black">
-        <h2 className="text-xl font-bold uppercase mb-1">Rekap Kehadiran Harian Siswa</h2>
-        <p className="text-md">
-          Kelas: {selectedClass === 'ALL' ? 'Semua Kelas' : selectedClass} | Tanggal: {formatDate(selectedDate)}
-        </p>
+      {/* PRINT HEADER / KOP RESMI */}
+      <div className="hidden print-only mb-4 text-black">
+        <div className="text-center pb-2 border-b-2 border-black">
+          <h1 className="text-lg font-bold uppercase tracking-wider text-black">
+            {schoolInfo?.nama_sekolah || 'SMK ASSALAAM BANDUNG'}
+          </h1>
+          <p className="text-xs text-slate-600 mt-0.5">
+            {schoolInfo?.alamat || 'Jl. Situtarate - Terusan Cibaduyut, Kab. Bandung'}
+          </p>
+        </div>
+        <div className="text-center mt-3 mb-2">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-black">
+            REKAP KEHADIRAN HARIAN SISWA
+          </h2>
+          <div className="flex justify-between items-center text-xs mt-2 text-slate-800 border-b border-slate-300 pb-2">
+            <span>Kelas: <strong>{selectedClass === 'ALL' ? 'Semua Kelas' : selectedClass}</strong></span>
+            <span>Tanggal: <strong>{formatDate(selectedDate)}</strong></span>
+            <span>Filter: <strong>{selectedStatus === 'ALL' ? 'Semua Tidak Hadir (S/I/A)' : selectedStatus}</strong></span>
+          </div>
+        </div>
+        
+        {/* Ringkasan Jumlah */}
+        <div className="flex gap-4 text-xs font-medium py-1 px-2.5 bg-slate-100 border border-slate-300 rounded mb-2">
+          <span>Total Tidak Hadir: <strong>{stats.total} siswa</strong></span>
+          <span>• Sakit: <strong>{stats.sakit}</strong></span>
+          <span>• Izin: <strong>{stats.izin}</strong></span>
+          <span>• Alpa: <strong>{stats.alpa}</strong></span>
+        </div>
       </div>
 
       {/* SUMMARY CARDS */}
@@ -343,7 +365,7 @@ export default function RekapHarian() {
             </p>
           </div>
         ) : (
-          <table className="w-full text-sm text-left print-table border-separate border-spacing-0">
+          <table className="w-full text-sm text-left print-table-harian border-separate border-spacing-0">
             <thead className="text-xs text-slate-600 uppercase bg-slate-50 sticky top-0 z-10 shadow-xs border-b border-slate-200 print:static print:shadow-none">
               <tr>
                 <th className="px-4 py-3 font-semibold w-12 text-center bg-slate-50 border-b border-slate-200 sticky top-0 z-10">No</th>
@@ -362,17 +384,17 @@ export default function RekapHarian() {
                   return (
                     <tr key={s.id} className="hover:bg-slate-50/50">
                       <td className="px-4 py-3 text-center">{idx + 1}</td>
-                      <td className="px-4 py-3 font-mono">{s.nis}</td>
+                      <td className="px-4 py-3 font-mono whitespace-nowrap">{s.nis}</td>
                       <td className="px-4 py-3 font-medium text-slate-900">{s.nama}</td>
-                      <td className="px-4 py-3">{s.kelas}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">{s.kelas}</td>
                       <td className="px-4 py-3 text-center">{s.gender}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 text-center">
                         <span className={cn(
-                          "px-2.5 py-1 rounded-full text-xs font-semibold print:border print:bg-transparent",
-                          status === 'Hadir' ? "bg-emerald-100 text-emerald-700 print:text-emerald-800" :
-                          status === 'Sakit' ? "bg-amber-100 text-amber-700 print:text-amber-800" :
-                          status === 'Izin' ? "bg-sky-100 text-sky-700 print:text-sky-800" :
-                          "bg-rose-100 text-rose-700 print:text-rose-800"
+                          "px-2.5 py-1 rounded-full text-xs font-semibold print:border print:bg-transparent print:px-2 print:py-0.5 print:text-[8pt] print:border-slate-400 print:text-black",
+                          status === 'Hadir' ? "bg-emerald-100 text-emerald-700" :
+                          status === 'Sakit' ? "bg-amber-100 text-amber-700" :
+                          status === 'Izin' ? "bg-sky-100 text-sky-700" :
+                          "bg-rose-100 text-rose-700"
                         )}>
                           {status}
                         </span>
@@ -385,6 +407,31 @@ export default function RekapHarian() {
               </tbody>
             </table>
         )}
+
+        {/* PRINT SIGNATURE BLOCK */}
+        <div className="hidden print-only mt-8 print-break-inside-avoid text-xs text-black">
+          <div className="flex justify-between items-start pt-4 px-2">
+            <div className="text-center w-56">
+              <p>Mengetahui,</p>
+              <p className="font-semibold">Kepala Sekolah</p>
+              <div className="h-16"></div>
+              <p className="font-bold underline">{schoolInfo?.kepala_sekolah || 'H.M. Luthfi Almanfaluthi, S.T.,M.Pd.'}</p>
+              <p className="text-[10px] mt-0.5">NIP. {schoolInfo?.nip_kepala || '..........................'}</p>
+            </div>
+
+            <div className="text-center w-56">
+              <p>{schoolInfo?.kota || 'Kab. Bandung'}, {formatShortDate(selectedDate)}</p>
+              <p className="font-semibold">
+                {selectedClass !== 'ALL' && waliMap[selectedClass.trim()] ? `Wali Kelas ${selectedClass}` : 'Petugas Piket Absensi'}
+              </p>
+              <div className="h-16"></div>
+              <p className="font-bold underline">
+                {selectedClass !== 'ALL' && waliMap[selectedClass.trim()] ? waliMap[selectedClass.trim()] : '.........................................'}
+              </p>
+              <p className="text-[10px] mt-0.5">NIP. ..........................</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -112,6 +112,23 @@
     print-color-adjust: exact;
   }
 
+  /* Reset flex & viewport height constraints so rows don't stretch vertically */
+  html,
+  body,
+  #root,
+  div[class*="h-[100dvh]"],
+  main,
+  main > div,
+  .flex-col,
+  .h-full,
+  .min-h-0 {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
   /* Hide app chrome */
   .no-print {
     display: none !important;
@@ -143,6 +160,61 @@
   .overflow-hidden {
     overflow: visible !important;
   }
+
+  /* ── Rekap Harian Print Table ─────────────────────── */
+  .print-table-harian {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    table-layout: auto !important;
+    font-size: 8.5pt !important;
+    height: auto !important;
+    margin-top: 6px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .print-table-harian tr {
+    height: auto !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .print-table-harian th,
+  .print-table-harian td {
+    border: 0.75pt solid #334155 !important;
+    padding: 5px 6px !important;
+    color: #0f172a !important;
+    font-size: 8.5pt !important;
+    line-height: 1.25 !important;
+    vertical-align: middle !important;
+    height: auto !important;
+  }
+
+  .print-table-harian thead th {
+    background-color: #f1f5f9 !important;
+    color: #1e293b !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    text-transform: uppercase !important;
+    font-size: 8pt !important;
+  }
+
+  /* Column widths for Rekap Harian */
+  .print-table-harian th:nth-child(1),
+  .print-table-harian td:nth-child(1) { width: 4%; text-align: center; } /* No */
+  .print-table-harian th:nth-child(2),
+  .print-table-harian td:nth-child(2) { width: 14%; text-align: center; font-family: monospace; font-size: 8.5pt; white-space: nowrap; } /* NIS */
+  .print-table-harian th:nth-child(3),
+  .print-table-harian td:nth-child(3) { width: 25%; text-align: left; font-weight: 500; } /* Nama Siswa */
+  .print-table-harian th:nth-child(4),
+  .print-table-harian td:nth-child(4) { width: 9%; text-align: center; white-space: nowrap; } /* Kelas */
+  .print-table-harian th:nth-child(5),
+  .print-table-harian td:nth-child(5) { width: 5%; text-align: center; } /* L/P */
+  .print-table-harian th:nth-child(6),
+  .print-table-harian td:nth-child(6) { width: 9%; text-align: center; font-weight: 700; } /* Status */
+  .print-table-harian th:nth-child(7),
+  .print-table-harian td:nth-child(7) { width: 17%; text-align: left; } /* Wali Kelas */
+  .print-table-harian th:nth-child(8),
+  .print-table-harian td:nth-child(8) { width: 17%; text-align: left; word-break: break-word; } /* Keterangan */
 
   /* ── Matrix table (Laporan tab) ─────────────────────── */
   .print-table {
@@ -177,7 +249,7 @@
 
   /* Default page — portrait for Rekap Harian */
   @page {
-    margin: 1.2cm 1.5cm;
+    margin: 1cm 1.2cm;
     size: A4 portrait;
   }
 }
