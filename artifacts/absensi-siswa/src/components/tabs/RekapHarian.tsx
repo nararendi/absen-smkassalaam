@@ -7,7 +7,7 @@ import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-type FilterStatus = 'ALL' | 'Sakit' | 'Izin' | 'Alpa' | 'TTS';
+type FilterStatus = 'ALL' | 'Sakit' | 'Izin' | 'Alpa' | 'SIM';
 
 export default function RekapHarian() {
   const [selectedClass, setSelectedClass] = useState<string>('ALL');
@@ -44,17 +44,18 @@ export default function RekapHarian() {
       record: attendanceMap.get(s.id) || null
     }));
 
-    // Rekap harian shows absent/special attendance (S/I/A/TTS). 'ALL' means all non-Hadir statuses.
+    // Rekap harian shows absent/special attendance (S/I/A/SIM). 'ALL' means all non-Hadir statuses.
     return enriched.filter(item => {
       const status = item.record?.status;
       if (!status || status === 'Hadir') return false; // always hide Hadir
-      if (selectedStatus === 'ALL') return true; // show all S/I/A/TTS
+      if (selectedStatus === 'ALL') return true; // show all S/I/A/SIM
+      if (selectedStatus === 'SIM') return status === 'SIM' || status === 'TTS';
       return status === selectedStatus;
     });
   }, [students, attendance, selectedClass, selectedStatus]);
 
   const stats = useMemo(() => {
-    let sakit = 0, izin = 0, alpa = 0, tts = 0;
+    let sakit = 0, izin = 0, alpa = 0, sim = 0;
     
     // Base stats on the filtered class students, not just the currently displayed list
     const classStudents = selectedClass === 'ALL' ? students : students.filter(s => s.kelas === selectedClass);
@@ -65,16 +66,16 @@ export default function RekapHarian() {
       if (status === 'Sakit') sakit++;
       else if (status === 'Izin') izin++;
       else if (status === 'Alpa') alpa++;
-      else if (status === 'TTS') tts++;
+      else if (status === 'SIM' || status === 'TTS') sim++;
     });
     
     return { 
-      total: sakit + izin + alpa + tts, 
+      total: sakit + izin + alpa + sim, 
       sakit, 
       izin, 
       alpa,
-      tts,
-      isPerfect: (sakit + izin + alpa + tts) === 0 && classStudents.length > 0
+      sim,
+      isPerfect: (sakit + izin + alpa + sim) === 0 && classStudents.length > 0
     };
   }, [students, attendance, selectedClass]);
 
@@ -136,7 +137,7 @@ export default function RekapHarian() {
             cell.font = { color: { argb: 'FFD97706' }, bold: true }; // Amber
           } else if (status === 'Alpa') {
             cell.font = { color: { argb: 'FFDC2626' }, bold: true }; // Rose
-          } else if (status === 'TTS') {
+          } else if (status === 'SIM' || status === 'TTS') {
             cell.font = { color: { argb: 'FF7E22CE' }, bold: true }; // Purple
           }
         }
@@ -208,7 +209,7 @@ export default function RekapHarian() {
           } else if (val === 'Alpa') {
             data.cell.styles.textColor = [220, 38, 38];
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'TTS') {
+          } else if (val === 'SIM' || val === 'TTS') {
             data.cell.styles.textColor = [126, 34, 206];
             data.cell.styles.fontStyle = 'bold';
           }
@@ -249,11 +250,11 @@ export default function RekapHarian() {
             value={selectedStatus}
             onChange={e => setSelectedStatus(e.target.value as FilterStatus)}
           >
-            <option value="ALL">Semua Tidak Hadir & TTS</option>
+            <option value="ALL">Semua Tidak Hadir & SIM</option>
             <option value="Sakit">Sakit Saja</option>
             <option value="Izin">Izin Saja</option>
             <option value="Alpa">Alpa Saja</option>
-            <option value="TTS">TTS Saja</option>
+            <option value="SIM">SIM Saja</option>
           </select>
         </div>
 
@@ -299,7 +300,7 @@ export default function RekapHarian() {
           <div className="flex justify-between items-center text-xs mt-2 text-slate-800 border-b border-slate-300 pb-2">
             <span>Kelas: <strong>{selectedClass === 'ALL' ? 'Semua Kelas' : selectedClass}</strong></span>
             <span>Tanggal: <strong>{formatDate(selectedDate)}</strong></span>
-            <span>Filter: <strong>{selectedStatus === 'ALL' ? 'Semua Tidak Hadir (S/I/A/TTS)' : selectedStatus}</strong></span>
+            <span>Filter: <strong>{selectedStatus === 'ALL' ? 'Semua Tidak Hadir (S/I/A/SIM)' : selectedStatus}</strong></span>
           </div>
         </div>
         
@@ -309,7 +310,7 @@ export default function RekapHarian() {
           <span>• Sakit: <strong>{stats.sakit}</strong></span>
           <span>• Izin: <strong>{stats.izin}</strong></span>
           <span>• Alpa: <strong>{stats.alpa}</strong></span>
-          <span>• TTS: <strong>{stats.tts}</strong></span>
+          <span>• SIM: <strong>{stats.sim}</strong></span>
         </div>
       </div>
 
@@ -352,8 +353,8 @@ export default function RekapHarian() {
           iconBg="bg-rose-100/80"
         />
         <StatCard 
-          label="TTS (Tidak Tap)" 
-          value={stats.tts} 
+          label="SIM (Tidak Tap)" 
+          value={stats.sim} 
           icon={<CreditCard className="w-4 h-4 text-purple-600" />}
           bg="bg-gradient-to-br from-purple-50/90 via-violet-50/40 to-purple-100/40 border-purple-200/80"
           valueColor="text-purple-950"
@@ -412,7 +413,7 @@ export default function RekapHarian() {
                           status === 'Hadir' ? "bg-emerald-100 text-emerald-700" :
                           status === 'Sakit' ? "bg-amber-100 text-amber-700" :
                           status === 'Izin' ? "bg-sky-100 text-sky-700" :
-                          status === 'TTS' ? "bg-purple-100 text-purple-700" :
+                          (status === 'SIM' || status === 'TTS') ? "bg-purple-100 text-purple-700" :
                           "bg-rose-100 text-rose-700"
                         )}>
                           {status}

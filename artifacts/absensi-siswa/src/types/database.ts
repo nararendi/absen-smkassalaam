@@ -1,4 +1,4 @@
-export type AttendanceStatus = 'Hadir' | 'Sakit' | 'Izin' | 'Alpa' | 'TTS';
+export type AttendanceStatus = 'Hadir' | 'Sakit' | 'Izin' | 'Alpa' | 'SIM' | 'TTS';
 export type Gender = 'L' | 'P';
 export type UserRole = 'admin' | 'petugas';
 

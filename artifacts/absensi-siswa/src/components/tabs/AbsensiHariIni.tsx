@@ -42,35 +42,35 @@ export default function AbsensiHariIni() {
 
   // Calculate stats
   const stats = useMemo(() => {
-    let hadir = 0, sakit = 0, izin = 0, alpa = 0, tts = 0;
+    let hadir = 0, sakit = 0, izin = 0, alpa = 0, sim = 0;
     filteredStudents.forEach(s => {
       const status = attendanceMap[s.id]?.status;
       if (status === 'Hadir') hadir++;
       else if (status === 'Sakit') sakit++;
       else if (status === 'Izin') izin++;
       else if (status === 'Alpa') alpa++;
-      else if (status === 'TTS') tts++;
+      else if (status === 'SIM' || status === 'TTS') sim++;
     });
     const total = filteredStudents.length;
-    const filled = hadir + sakit + izin + alpa + tts;
-    return { total, filled, hadir, sakit, izin, alpa, tts, percentHadir: total ? Math.round(((hadir + tts) / total) * 100) : 0 };
+    const filled = hadir + sakit + izin + alpa + sim;
+    return { total, filled, hadir, sakit, izin, alpa, sim, percentHadir: total ? Math.round(((hadir + sim) / total) * 100) : 0 };
   }, [filteredStudents, attendanceMap]);
 
   const handleStatusToggle = (studentId: string, status: AttendanceStatus) => {
     const current = attendanceMap[studentId];
-    if (current?.status === status) {
+    if (current?.status === status || (status === 'SIM' && current?.status === 'TTS')) {
       // Toggle off -> Delete record
       deleteAttendance.mutate({ id: current.id, date: selectedDate });
     } else {
       // Create or update
       let newNote = current?.note || '';
-      if (status === 'TTS') {
+      if (status === 'SIM') {
         // Auto-fill 'Hadir Tidak Tap SIM' if note is empty or was previous default
         if (!newNote || newNote.trim() === '' || newNote === 'Tidak Tap SIM') {
           newNote = 'Hadir Tidak Tap SIM';
         }
-      } else if (current?.status === 'TTS' && (newNote === 'Hadir Tidak Tap SIM' || newNote === 'Tidak Tap SIM')) {
-        // Clear default auto-note if changing away from TTS
+      } else if ((current?.status === 'SIM' || current?.status === 'TTS') && (newNote === 'Hadir Tidak Tap SIM' || newNote === 'Tidak Tap SIM')) {
+        // Clear default auto-note if changing away from SIM
         newNote = '';
       }
 
@@ -202,8 +202,8 @@ export default function AbsensiHariIni() {
         </div>
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-purple-500"></span>
-          <span className="text-slate-500">TTS:</span>
-          <span className="font-semibold text-purple-700">{stats.tts}</span>
+          <span className="text-slate-500">SIM:</span>
+          <span className="font-semibold text-purple-700">{stats.sim}</span>
         </div>
       </div>
 
@@ -287,12 +287,12 @@ export default function AbsensiHariIni() {
                           tooltip="Alpa"
                         />
                         <StatusButton 
-                          label="TTS" 
-                          active={status === 'TTS'} 
+                          label="SIM" 
+                          active={status === 'SIM' || status === 'TTS'} 
                           colorClass="bg-purple-600 text-white hover:bg-purple-700 border-purple-700" 
                           idleClass="text-slate-600 hover:bg-slate-200 bg-white border-slate-200"
-                          onClick={() => handleStatusToggle(s.id, 'TTS')}
-                          tooltip="TTS (Tidak Tap SIM)"
+                          onClick={() => handleStatusToggle(s.id, 'SIM')}
+                          tooltip="SIM (Hadir Tidak Tap SIM)"
                         />
                       </div>
                     </td>

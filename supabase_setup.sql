@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS attendance_records (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   date date NOT NULL,
   student_id uuid NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-  status text NOT NULL CHECK (status IN ('Hadir', 'Sakit', 'Izin', 'Alpa', 'TTS')),
+  status text NOT NULL CHECK (status IN ('Hadir', 'Sakit', 'Izin', 'Alpa', 'SIM', 'TTS')),
   note text DEFAULT '',
   created_at timestamptz DEFAULT now(),
   UNIQUE(date, student_id)

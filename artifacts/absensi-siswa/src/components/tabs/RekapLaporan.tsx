@@ -87,13 +87,13 @@ export default function RekapLaporan() {
 
         let finalStatus = '-';
         if (record) {
-          finalStatus = record === 'TTS' ? 'T' : record.charAt(0); // H, S, I, A, T
+          finalStatus = (record === 'SIM' || record === 'TTS') ? 'TS' : record.charAt(0); // H, S, I, A, TS
         } else if (hasClassRecord && !isWeekend) {
           // If class had attendance taken, but this student has no record -> assume Hadir
           finalStatus = 'H';
         }
 
-        if (finalStatus === 'H' || finalStatus === 'T') h++;
+        if (finalStatus === 'H' || finalStatus === 'TS' || finalStatus === 'T') h++;
         else if (finalStatus === 'S') sakit++;
         else if (finalStatus === 'I') i++;
         else if (finalStatus === 'A') a++;
@@ -143,12 +143,12 @@ export default function RekapLaporan() {
           const record = studentRecords.get(date);
           let finalStatus = '-';
           if (record) {
-            finalStatus = record.status === 'TTS' ? 'T' : record.status.charAt(0);
+            finalStatus = (record.status === 'SIM' || record.status === 'TTS') ? 'TS' : record.status.charAt(0);
           } else if (!isWeekend) {
             finalStatus = 'H';
           }
 
-          if (finalStatus === 'H' || finalStatus === 'T') h++;
+          if (finalStatus === 'H' || finalStatus === 'TS' || finalStatus === 'T') h++;
           else if (finalStatus === 'S') sakit++;
           else if (finalStatus === 'I') i++;
           else if (finalStatus === 'A') a++;
@@ -275,8 +275,8 @@ export default function RekapLaporan() {
           const val = cell.value as string;
           if (val === 'H') {
             cell.font = { color: { argb: 'FF16A34A' }, bold: true }; // Emerald 600
-          } else if (val === 'T') {
-            cell.font = { color: { argb: 'FF7E22CE' }, bold: true }; // Purple 700 (TTS)
+          } else if (val === 'TS' || val === 'T') {
+            cell.font = { color: { argb: 'FF7E22CE' }, bold: true }; // Purple 700 (SIM / TS)
           } else if (val === 'S' || val === 'I') {
             cell.font = { color: { argb: 'FFD97706' }, bold: true }; // Amber 600
           } else if (val === 'A') {
@@ -396,8 +396,8 @@ export default function RekapLaporan() {
           if (val === 'H') {
             data.cell.styles.textColor = [22, 163, 74];
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'T') {
-            data.cell.styles.textColor = [126, 34, 206]; // Purple 700 (TTS)
+          } else if (val === 'TS' || val === 'T') {
+            data.cell.styles.textColor = [126, 34, 206]; // Purple 700 (SIM / TS)
             data.cell.styles.fontStyle = 'bold';
           } else if (val === 'S' || val === 'I') {
             data.cell.styles.textColor = [217, 119, 6];
@@ -821,7 +821,7 @@ export default function RekapLaporan() {
                             status === 'H' ? "text-emerald-600 print:text-black" :
                             status === 'S' ? "text-amber-500 print:text-black" :
                             status === 'I' ? "text-sky-500 print:text-black" :
-                            status === 'T' ? "text-purple-600 font-bold print:text-black" :
+                            (status === 'TS' || status === 'T') ? "text-purple-600 font-bold print:text-black" :
                             status === 'A' ? "text-rose-500 print:text-black" : "text-slate-300 print:text-black"
                           )}>
                             {status}
@@ -882,7 +882,7 @@ export default function RekapLaporan() {
                                       "text-[10px] font-bold px-1.5 py-0.5 rounded",
                                       n.status === 'Sakit' ? "bg-amber-100 text-amber-800 print:text-black" :
                                       n.status === 'Izin' ? "bg-sky-100 text-sky-800 print:text-black" :
-                                      n.status === 'TTS' ? "bg-purple-100 text-purple-800 print:text-black" :
+                                      (n.status === 'SIM' || n.status === 'TTS') ? "bg-purple-100 text-purple-800 print:text-black" :
                                       "bg-rose-100 text-rose-800 print:text-black"
                                     )}>
                                       {n.status}
