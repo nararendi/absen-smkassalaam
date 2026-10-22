@@ -217,7 +217,7 @@ export default function RekapHarian() {
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0 animate-in fade-in duration-300">
+    <div className="flex flex-col h-full min-h-0 animate-in fade-in duration-300 print:h-auto print:block print:overflow-visible">
       {/* TOOLBAR (No Print) */}
       <div className="shrink-0 p-4 sm:p-5 border-b border-slate-200 bg-white flex flex-col lg:flex-row lg:items-center gap-4 justify-between no-print">
         <div className="flex flex-wrap gap-3">
@@ -275,7 +275,7 @@ export default function RekapHarian() {
       </div>
 
       {/* PRINT HEADER / KOP RESMI */}
-      <div className="hidden print-only mb-4 text-black">
+      <div className="hidden print:block print-only mb-4 text-black">
         <div className="text-center pb-2 border-b-2 border-black">
           <h1 className="text-lg font-bold uppercase tracking-wider text-black">
             {schoolInfo?.nama_sekolah || 'SMK ASSALAAM BANDUNG'}
@@ -345,7 +345,7 @@ export default function RekapHarian() {
       </div>
 
       {/* TABLE */}
-      <div className="flex-1 overflow-auto min-h-0 print:overflow-visible relative">
+      <div className="flex-1 overflow-auto min-h-0 print:overflow-visible relative print:h-auto print:block">
         {isLoading ? (
           <div className="p-4 sm:p-6 space-y-4">
             {[1,2,3].map(i => <div key={i} className="h-12 bg-slate-100 animate-pulse rounded"></div>)}
@@ -365,7 +365,7 @@ export default function RekapHarian() {
             </p>
           </div>
         ) : (
-          <table className="w-full text-sm text-left print-table-harian border-separate border-spacing-0">
+          <table className="w-full text-sm text-left print-table-harian border-separate border-spacing-0 print:border-collapse">
             <thead className="text-xs text-slate-600 uppercase bg-slate-50 sticky top-0 z-10 shadow-xs border-b border-slate-200 print:static print:shadow-none">
               <tr>
                 <th className="px-4 py-3 font-semibold w-12 text-center bg-slate-50 border-b border-slate-200 sticky top-0 z-10">No</th>
@@ -409,7 +409,7 @@ export default function RekapHarian() {
         )}
 
         {/* PRINT SIGNATURE BLOCK */}
-        <div className="hidden print-only mt-8 print-break-inside-avoid text-xs text-black">
+        <div className="hidden print:block print-only mt-8 print-break-inside-avoid text-xs text-black">
           <div className="flex justify-between items-start pt-4 px-2">
             <div className="text-center w-56">
               <p>Mengetahui,</p>

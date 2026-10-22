@@ -116,10 +116,11 @@
   html,
   body,
   #root,
-  div[class*="h-[100dvh]"],
+  .app-layout,
   main,
   main > div,
   .flex-col,
+  .flex-1,
   .h-full,
   .min-h-0 {
     height: auto !important;
@@ -127,6 +128,15 @@
     max-height: none !important;
     overflow: visible !important;
     display: block !important;
+  }
+
+  /* Table and rows must never stretch to full viewport height */
+  table,
+  tbody,
+  tr,
+  td,
+  th {
+    height: auto !important;
   }
 
   /* Hide app chrome */
@@ -165,14 +175,14 @@
   .print-table-harian {
     border-collapse: collapse !important;
     width: 100% !important;
-    table-layout: auto !important;
+    table-layout: fixed !important;
     font-size: 8.5pt !important;
     height: auto !important;
     margin-top: 6px !important;
     margin-bottom: 12px !important;
   }
 
-  .print-table-harian tr {
+  .print-table-harian tbody tr {
     height: auto !important;
     page-break-inside: avoid;
     break-inside: avoid;
@@ -181,7 +191,7 @@
   .print-table-harian th,
   .print-table-harian td {
     border: 0.75pt solid #334155 !important;
-    padding: 5px 6px !important;
+    padding: 4px 6px !important;
     color: #0f172a !important;
     font-size: 8.5pt !important;
     line-height: 1.25 !important;
@@ -198,23 +208,23 @@
     font-size: 8pt !important;
   }
 
-  /* Column widths for Rekap Harian */
+  /* Strict column widths for Rekap Harian */
   .print-table-harian th:nth-child(1),
-  .print-table-harian td:nth-child(1) { width: 4%; text-align: center; } /* No */
+  .print-table-harian td:nth-child(1) { width: 5% !important; text-align: center !important; } /* No */
   .print-table-harian th:nth-child(2),
-  .print-table-harian td:nth-child(2) { width: 14%; text-align: center; font-family: monospace; font-size: 8.5pt; white-space: nowrap; } /* NIS */
+  .print-table-harian td:nth-child(2) { width: 14% !important; text-align: center !important; font-family: monospace !important; font-size: 8.5pt !important; white-space: nowrap !important; } /* NIS */
   .print-table-harian th:nth-child(3),
-  .print-table-harian td:nth-child(3) { width: 25%; text-align: left; font-weight: 500; } /* Nama Siswa */
+  .print-table-harian td:nth-child(3) { width: 25% !important; text-align: left !important; font-weight: 500 !important; } /* Nama Siswa */
   .print-table-harian th:nth-child(4),
-  .print-table-harian td:nth-child(4) { width: 9%; text-align: center; white-space: nowrap; } /* Kelas */
+  .print-table-harian td:nth-child(4) { width: 10% !important; text-align: center !important; white-space: nowrap !important; } /* Kelas */
   .print-table-harian th:nth-child(5),
-  .print-table-harian td:nth-child(5) { width: 5%; text-align: center; } /* L/P */
+  .print-table-harian td:nth-child(5) { width: 5% !important; text-align: center !important; } /* L/P */
   .print-table-harian th:nth-child(6),
-  .print-table-harian td:nth-child(6) { width: 9%; text-align: center; font-weight: 700; } /* Status */
+  .print-table-harian td:nth-child(6) { width: 9% !important; text-align: center !important; font-weight: 700 !important; } /* Status */
   .print-table-harian th:nth-child(7),
-  .print-table-harian td:nth-child(7) { width: 17%; text-align: left; } /* Wali Kelas */
+  .print-table-harian td:nth-child(7) { width: 16% !important; text-align: left !important; } /* Wali Kelas */
   .print-table-harian th:nth-child(8),
-  .print-table-harian td:nth-child(8) { width: 17%; text-align: left; word-break: break-word; } /* Keterangan */
+  .print-table-harian td:nth-child(8) { width: 16% !important; text-align: left !important; word-break: break-word !important; } /* Keterangan */
 
   /* ── Matrix table (Laporan tab) ─────────────────────── */
   .print-table {
