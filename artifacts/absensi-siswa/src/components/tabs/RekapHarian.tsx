@@ -138,7 +138,7 @@ export default function RekapHarian() {
             cell.font = { color: { argb: 'FFD97706' }, bold: true }; // Amber
           } else if (status === 'Alpa') {
             cell.font = { color: { argb: 'FFDC2626' }, bold: true }; // Rose
-          } else if (status === 'SIM' || status === 'TTS') {
+          } else if (status === 'SIM') {
             cell.font = { color: { argb: 'FF7E22CE' }, bold: true }; // Purple
           }
         }
@@ -191,6 +191,8 @@ export default function RekapHarian() {
         item.record?.note || '-'
       ];
     });
+
+    const headers = ['No', 'NIS', 'Nama Siswa', 'Kelas', 'L/P', 'Status', 'Wali Kelas', 'Keterangan'];
 
     autoTable(doc, {
       startY: 35,
@@ -418,7 +420,7 @@ export default function RekapHarian() {
                           status === 'Hadir' ? "bg-emerald-100 text-emerald-700" :
                           status === 'Sakit' ? "bg-amber-100 text-amber-700" :
                           status === 'Izin' ? "bg-sky-100 text-sky-700" :
-                          (status === 'SIM' || status === 'TTS') ? "bg-purple-100 text-purple-700" :
+                          status === 'SIM' ? "bg-purple-100 text-purple-700" :
                           "bg-rose-100 text-rose-700"
                         )}>
                           {status}
