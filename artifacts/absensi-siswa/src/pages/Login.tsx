@@ -104,6 +104,12 @@ export default function Login({ onSuccess }: LoginProps) {
             )}
           </button>
         </form>
+
+        <div className="mt-6 pt-5 border-t border-white/10 text-center">
+          <p className="text-xs text-slate-400">
+            Application By <span className="text-slate-200 font-medium">Rendi Yosandi, A.Md.</span>
+          </p>
+        </div>
       </div>
     </div>
   );
