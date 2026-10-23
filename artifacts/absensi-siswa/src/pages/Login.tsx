@@ -43,7 +43,7 @@ export default function Login({ onSuccess }: LoginProps) {
           <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg mb-4">
             <ShieldCheck className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Portal Petugas</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-white mb-2 leading-snug">Absensi Siswa SMK Assalaam Bandung</h1>
           <p className="text-slate-400 text-sm">Silakan masuk untuk mengelola dan merekap data absensi siswa.</p>
         </div>
 
